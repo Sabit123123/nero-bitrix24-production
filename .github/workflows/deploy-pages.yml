@@ -1,9 +1,8 @@
 name: Deploy AquaUzel site to GitHub Pages
 
 # Публикует папку aquauzel-site на GitHub Pages.
-# Перед первым запуском включите Pages: Settings → Pages → Build and deployment →
-# Source: "GitHub Actions". После этого сайт будет доступен по адресу,
-# на который ведёт QR-код: https://sabit123123.github.io/nero-bitrix24-production/
+# configure-pages с enablement:true пытается включить Pages автоматически.
+# Итоговый адрес — кастомный домен из aquauzel-site/CNAME: https://aquauzel.kz
 
 on:
   push:
@@ -31,6 +30,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: aquauzel-site
