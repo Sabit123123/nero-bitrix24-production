@@ -1,0 +1,38 @@
+name: Deploy AquaUzel site to GitHub Pages
+
+# Публикует папку aquauzel-site на GitHub Pages.
+# Перед первым запуском включите Pages: Settings → Pages → Build and deployment →
+# Source: "GitHub Actions". После этого сайт будет доступен по адресу,
+# на который ведёт QR-код: https://sabit123123.github.io/nero-bitrix24-production/
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'aquauzel-site/**'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: aquauzel-site
+      - id: deployment
+        uses: actions/deploy-pages@v4

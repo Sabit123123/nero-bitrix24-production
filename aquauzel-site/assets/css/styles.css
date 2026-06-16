@@ -96,6 +96,7 @@ input,button{font:inherit}
 .site-header.scrolled{background:rgba(8,13,24,.86);border-bottom-color:var(--border)}
 .header-inner{display:flex;align-items:center;gap:18px;height:74px}
 .brand{display:flex;align-items:center;flex-shrink:0}
+.brand-logo{height:52px;width:auto;display:block}
 .nav{display:flex;gap:6px;margin-left:auto}
 .nav a{padding:10px 16px;border-radius:11px;color:var(--text-dim);font-weight:600;font-size:.95rem;transition:.2s}
 .nav a:hover{color:#fff;background:var(--surface-2)}
@@ -422,6 +423,7 @@ mark{background:rgba(42,157,244,.32);color:#fff;border-radius:4px;padding:0 2px}
     margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
   .tabs::-webkit-scrollbar{display:none}
   .tab{flex-shrink:0}
+  .brand-logo{height:42px}
   .fab{width:54px;height:54px}
   .fab svg{width:27px;height:27px}
   .dock{gap:12px}
