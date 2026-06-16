@@ -242,6 +242,32 @@
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
+    if (toTop) toTop.addEventListener("click", function (e) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    // easter egg: 20 кликов по логотипу — «Вова» выглядывает снизу экрана
+    var brand = $(".brand"), vova = $("#vova"), vovaClicks = 0, vovaBusy = false;
+    if (brand && vova) {
+      brand.addEventListener("click", function () {
+        if (++vovaClicks >= 20 && !vovaBusy) { vovaClicks = 0; playVova(); }
+      });
+    }
+    function playVova() {
+      vovaBusy = true;
+      if (vova.dataset.src && !vova.getAttribute("src")) vova.setAttribute("src", vova.dataset.src);
+      var n = 0;
+      (function peek() {
+        vova.classList.add("peek");
+        setTimeout(function () {
+          vova.classList.remove("peek");
+          if (++n < 3) setTimeout(peek, 460);
+          else setTimeout(function () { vovaBusy = false; }, 800);
+        }, 1000);
+      })();
+    }
+
     var burger = $("#burger"), menu = $("#mobileMenu");
     if (burger && menu) {
       burger.addEventListener("click", function () {

@@ -393,7 +393,7 @@ mark{background:rgba(42,157,244,.32);color:#fff;border-radius:4px;padding:0 2px}
 }
 @media (max-width:860px){
   .nav{display:none}
-  .burger{display:flex}
+  .burger{display:none}
   .phone-link span{display:none}
   .phone-link{padding:11px}
   .hero-grid{grid-template-columns:1fr;text-align:center}
@@ -476,3 +476,24 @@ mark{background:rgba(42,157,244,.32);color:#fff;border-radius:4px;padding:0 2px}
   .price-tools{flex-direction:column}
   .price-dl{width:100%}
 }
+
+/* ---------- mobile section icon-nav ---------- */
+section[id],#top{scroll-margin-top:88px}
+.icon-nav{display:none;align-items:stretch;gap:2px;padding:5px 6px;
+  border-top:1px solid var(--border);background:rgba(8,13,24,.35)}
+.icon-nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  padding:7px 2px;border-radius:11px;color:var(--text-dim);font-size:.6rem;font-weight:600;
+  line-height:1.1;white-space:nowrap;text-align:center;transition:background .15s,color .15s}
+.icon-nav a svg{width:21px;height:21px}
+.icon-nav a:active{background:var(--surface-2);color:#fff}
+@media (max-width:380px){ .icon-nav a{font-size:.54rem} .icon-nav a svg{width:19px;height:19px} }
+@media (max-width:860px){
+  .icon-nav{display:flex}
+  section[id],#top{scroll-margin-top:124px}
+}
+
+/* ---------- easter egg: «Вова» выглядывает снизу ---------- */
+.vova-egg{position:fixed;right:6vw;bottom:0;width:min(230px,42vw);z-index:1200;pointer-events:none;
+  filter:drop-shadow(0 -12px 28px rgba(0,0,0,.55));transform:translateY(110%);
+  transition:transform .75s cubic-bezier(.34,1.45,.64,1)}
+.vova-egg.peek{transform:translateY(46%)}
