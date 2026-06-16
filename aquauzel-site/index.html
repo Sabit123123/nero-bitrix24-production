@@ -9,6 +9,7 @@
 <meta property="og:title" content="AquaUzel — инженерная сантехника и изоляция">
 <meta property="og:description" content="Трубы, фитинги, тёплый пол и изоляция. Опт и розница. Актуальный прайс и быстрая доставка по Казахстану.">
 <meta property="og:type" content="website">
+<meta property="og:image" content="assets/img/og-cover.jpg">
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -76,10 +77,12 @@
 <main>
   <!-- ====== hero ====== -->
   <section class="hero">
+    <div class="spotlight" aria-hidden="true"></div>
+    <div class="bubbles" aria-hidden="true"></div>
     <div class="container hero-grid">
       <div class="hero-copy">
         <span class="eyebrow"><span class="dot"></span> Опт и розница · Казахстан</span>
-        <h1>Инженерная сантехника <span class="grad">AquaUzel</span></h1>
+        <h1>Инженерная сантехника <span class="grad grad-anim">AquaUzel</span></h1>
         <p class="lead">Трубы, фитинги, канализация, тёплый пол и изоляция — всё для водоснабжения и отопления в одном месте. Актуальный прайс, надёжное качество и быстрая доставка.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="#prices">Смотреть прайс-лист</a>
@@ -89,8 +92,8 @@
           </a>
         </div>
         <dl class="hero-stats">
-          <div><dt id="stat-items">442+</dt><dd>позиций в прайсе</dd></div>
-          <div><dt>8</dt><dd>категорий товара</dd></div>
+          <div><dt id="stat-items" data-count="442" data-suffix="+">442+</dt><dd>позиций в прайсе</dd></div>
+          <div><dt data-count="8">8</dt><dd>категорий товара</dd></div>
           <div><dt>PN20<span>/</span>25</dt><dd>трубы и фитинги</dd></div>
         </dl>
       </div>
@@ -103,6 +106,14 @@
       </div>
     </div>
   </section>
+
+  <!-- ====== marquee trust band ====== -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <b>Опт и розница</b><i>◆</i><b>Доставка по Казахстану</b><i>◆</i><b>Полипропилен PN20/25</b><i>◆</i><b>Тёплый пол PE‑RT</b><i>◆</i><b>Канализация ПВХ</b><i>◆</i><b>Каучуковая изоляция</b><i>◆</i><b>Латунная фурнитура</b><i>◆</i><b>Подбор под проект</b><i>◆</i>
+      <b>Опт и розница</b><i>◆</i><b>Доставка по Казахстану</b><i>◆</i><b>Полипропилен PN20/25</b><i>◆</i><b>Тёплый пол PE‑RT</b><i>◆</i><b>Канализация ПВХ</b><i>◆</i><b>Каучуковая изоляция</b><i>◆</i><b>Латунная фурнитура</b><i>◆</i><b>Подбор под проект</b><i>◆</i>
+    </div>
+  </div>
 
   <!-- ====== advantages ====== -->
   <section class="section" id="advantages">
@@ -147,6 +158,39 @@
 
       <div class="tabs" id="price-tabs" role="tablist" aria-label="Категории прайса"></div>
       <div class="price-body" id="price-body" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ====== use cases ====== -->
+  <section class="section section-muted" id="usecases">
+    <div class="container">
+      <header class="section-head">
+        <span class="kicker">Применение</span>
+        <h2>Где используется наша продукция</h2>
+        <p>Полный цикл для инженерных систем — от стояка до тёплого пола. Изображения подставятся автоматически после генерации.</p>
+      </header>
+      <div class="use-grid">
+        <article class="use-card">
+          <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7l5.7 5.7a8 8 0 1 1-11.4 0z"/></svg></div>
+          <img src="assets/img/use/vodosnabzhenie.jpg" alt="Водоснабжение" loading="lazy" onerror="this.remove()">
+          <div class="cap">Водоснабжение<small>Трубы ППР и ПЭ, фитинги, краны</small></div>
+        </article>
+        <article class="use-card">
+          <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></div>
+          <img src="assets/img/use/otoplenie.jpg" alt="Отопление и тёплый пол" loading="lazy" onerror="this.remove()">
+          <div class="cap">Отопление и тёплый пол<small>PE‑RT, коллекторы, изоляция</small></div>
+        </article>
+        <article class="use-card">
+          <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"/></svg></div>
+          <img src="assets/img/use/kanalizaciya.jpg" alt="Канализация" loading="lazy" onerror="this.remove()">
+          <div class="cap">Канализация<small>ПВХ трубы и фасонные части</small></div>
+        </article>
+        <article class="use-card">
+          <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12.8 2.2-9.6 4.4a1 1 0 0 0 0 1.8l8.6 3.9a2 2 0 0 0 1.7 0l8.5-3.9a1 1 0 0 0 0-1.8L13.7 2.2a2 2 0 0 0-.9 0zM2 12.5l8.6 3.9a2 2 0 0 0 1.7 0L22 12.5M2 17.5l8.6 3.9a2 2 0 0 0 1.7 0L22 17.5"/></svg></div>
+          <img src="assets/img/use/izolyaciya.jpg" alt="Изоляция" loading="lazy" onerror="this.remove()">
+          <div class="cap">Тепло- и шумоизоляция<small>Каучук, рулоны, скорлупа</small></div>
+        </article>
+      </div>
     </div>
   </section>
 

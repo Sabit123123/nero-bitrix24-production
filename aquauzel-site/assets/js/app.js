@@ -259,7 +259,94 @@
     if (year) year.textContent = "© " + new Date().getFullYear();
 
     var statItems = $("#stat-items");
-    if (statItems && DATA.totalItems) statItems.textContent = DATA.totalItems + "+";
+    if (statItems && DATA.totalItems) statItems.setAttribute("data-count", DATA.totalItems);
+  }
+
+  /* ---- effects: reveal, counters, spotlight, tilt, parallax, bubbles ---- */
+  function initEffects() {
+    var RM = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    var revealEls = document.querySelectorAll(
+      ".section-head,.feature,.cat-card,.contact-card,.use-card,.about-visual,.about-copy,.cta-inner");
+    revealEls.forEach(function (el, i) {
+      el.setAttribute("data-reveal", "");
+      el.style.transitionDelay = (i % 6) * 0.06 + "s";
+    });
+    if (RM || !("IntersectionObserver" in window)) {
+      revealEls.forEach(function (el) { el.classList.add("is-visible"); });
+    } else {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add("is-visible"); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+      revealEls.forEach(function (el) { io.observe(el); });
+    }
+
+    var counters = document.querySelectorAll("[data-count]");
+    function countUp(el) {
+      var target = +el.getAttribute("data-count"), suf = el.getAttribute("data-suffix") || "";
+      if (RM) { el.textContent = target + suf; return; }
+      var start = null;
+      function step(ts) {
+        start = start || ts;
+        var p = Math.min((ts - start) / 1300, 1);
+        el.textContent = Math.floor((1 - Math.pow(1 - p, 3)) * target) + suf;
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+    if (counters.length) {
+      if (RM || !("IntersectionObserver" in window)) { counters.forEach(countUp); }
+      else {
+        var cio = new IntersectionObserver(function (es) {
+          es.forEach(function (e) { if (e.isIntersecting) { countUp(e.target); cio.unobserve(e.target); } });
+        }, { threshold: 0.6 });
+        counters.forEach(function (c) { cio.observe(c); });
+      }
+    }
+
+    if (RM) return; // skip pointer/scroll motion when reduced-motion is on
+
+    var hero = $(".hero"), spot = $(".spotlight");
+    if (hero && spot) hero.addEventListener("pointermove", function (e) {
+      var r = hero.getBoundingClientRect();
+      spot.style.setProperty("--mx", (e.clientX - r.left) / r.width * 100 + "%");
+      spot.style.setProperty("--my", (e.clientY - r.top) / r.height * 100 + "%");
+    });
+
+    if (window.matchMedia("(pointer:fine)").matches) {
+      document.querySelectorAll(".cat-card,.use-card").forEach(function (card) {
+        card.addEventListener("pointermove", function (e) {
+          var r = card.getBoundingClientRect();
+          var rx = (e.clientX - r.left) / r.width - 0.5, ry = (e.clientY - r.top) / r.height - 0.5;
+          card.style.transform = "perspective(820px) rotateY(" + rx * 7 + "deg) rotateX(" + (-ry * 7) + "deg)";
+        });
+        card.addEventListener("pointerleave", function () { card.style.transform = ""; });
+      });
+    }
+
+    var grid = $(".bg-grid"), hv = $(".hero-visual"), ticking = false;
+    window.addEventListener("scroll", function () {
+      if (ticking) return; ticking = true;
+      requestAnimationFrame(function () {
+        var y = window.scrollY;
+        if (grid) grid.style.transform = "translateY(" + y * 0.12 + "px)";
+        if (hv && y < 1000) hv.style.transform = "translateY(" + y * 0.04 + "px)";
+        ticking = false;
+      });
+    }, { passive: true });
+
+    var bc = $(".bubbles");
+    if (bc) for (var i = 0; i < 14; i++) {
+      var d = document.createElement("span"), s = 6 + Math.random() * 22;
+      d.className = "bubble";
+      d.style.width = d.style.height = s + "px";
+      d.style.left = Math.random() * 100 + "%";
+      d.style.animationDuration = 9 + Math.random() * 12 + "s";
+      d.style.animationDelay = -Math.random() * 12 + "s";
+      bc.appendChild(d);
+    }
   }
 
   /* ---- boot ---- */
@@ -270,5 +357,6 @@
     renderCategory(0);
     initSearch();
     initChrome();
+    initEffects();
   });
 })();
