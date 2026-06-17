@@ -23,24 +23,46 @@
   }
 
   /* ---------- вход ---------- */
+  var entered = false;
+  function enterApp(user) {
+    if (entered) return;            // защита от повторного входа по событию onAuth
+    entered = true;
+    var ue = $("#userEmail"); if (ue) ue.textContent = (user && user.email) || "";
+    show("app");
+    loadProducts();
+  }
+  function resetLoginBtn() {
+    var btn = $("#loginBtn"); if (btn) { btn.disabled = false; btn.textContent = "Войти"; }
+  }
+
   function initAuth() {
+    var ADMIN_EMAIL = (window.AQUA_SUPABASE && window.AQUA_SUPABASE.adminEmail) || "admin@aquauzel.kz";
+
     $("#loginForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
+      e.preventDefault();                                   // не перезагружаем страницу
       var btn = $("#loginBtn"), err = $("#loginError");
       err.hidden = true; btn.disabled = true; btn.textContent = "Вход…";
       try {
-        await S.signIn($("#email").value.trim(), $("#password").value);
+        var data = await S.signIn(ADMIN_EMAIL, $("#password").value);
+        console.log("[admin] вход выполнен:", data && data.user && data.user.email);
+        resetLoginBtn();
+        enterApp(data && data.user);                        // заходим сразу по результату
       } catch (ex) {
-        err.textContent = "Не удалось войти: " + (ex.message || "проверьте email и пароль");
+        console.error("[admin] ошибка входа:", ex);
+        err.textContent = "Не удалось войти: " + (ex && ex.message ? ex.message : "проверьте пароль и настройки Supabase");
         err.hidden = false;
-      } finally { btn.disabled = false; btn.textContent = "Войти"; }
+        resetLoginBtn();
+      }
     });
-    $("#logoutBtn").addEventListener("click", function () { S.signOut(); });
 
-    S.onAuth(function (user) {
-      if (user) { $("#userEmail").textContent = user.email || ""; show("app"); loadProducts(); }
-      else { show("login"); }
+    $("#logoutBtn").addEventListener("click", async function () {
+      try { await S.signOut(); } catch (e) { console.error(e); }
+      entered = false; resetLoginBtn(); show("login");
     });
+
+    // Восстановление уже существующей сессии при загрузке. На null НЕ сбрасываем
+    // на логин (это вызывало «мигание» формы во время входа) — выход делается явно.
+    S.onAuth(function (user) { if (user) enterApp(user); });
   }
 
   /* ---------- загрузка и рендер ---------- */
@@ -204,17 +226,26 @@
   }
 
   /* ---------- старт ---------- */
-  document.addEventListener("DOMContentLoaded", function () {
-    if (!S || !S.isConfigured()) { show("needConfig"); return; }
+  function start() {
+    console.log("[admin] AQUA_SUPABASE найден:", !!window.AQUA_SUPABASE,
+      "| Supabase SDK:", typeof window.supabase !== "undefined",
+      "| client настроен:", !!(S && S.isConfigured()));
+    if (!S || !S.isConfigured()) {
+      console.warn("[admin] Supabase не настроен — проверьте url и anonKey в assets/js/supabase-config.js");
+      show("needConfig"); return;
+    }
     var em = $("#email");
     if (em) em.value = (window.AQUA_SUPABASE && window.AQUA_SUPABASE.adminEmail) || "admin@aquauzel.kz";
     initAuth();
     ["search", "filterCat", "filterStock", "sortBy"].forEach(function (id) {
       var n = document.getElementById(id);
-      n.addEventListener(id === "search" ? "input" : "change", render);
+      if (n) n.addEventListener(id === "search" ? "input" : "change", render);
     });
-    $("#addBtn").addEventListener("click", addBlank);
+    var add = $("#addBtn"); if (add) add.addEventListener("click", addBlank);
     initEgg();
     show("login");
-  });
+  }
+  // запускаемся надёжно, даже если DOMContentLoaded уже произошёл
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
 })();
