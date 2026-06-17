@@ -92,7 +92,14 @@
     var res = await client.auth.getUser();
     return res.data ? res.data.user : null;
   }
-  function onAuth(cb) { if (client) client.auth.onAuthStateChange(function (_e, s) { cb(s ? s.user : null); }); }
+  // Колбэк откладываем через setTimeout, чтобы НЕ вызывать методы Supabase
+  // внутри onAuthStateChange (иначе возможен deadlock клиента gotrue-js).
+  function onAuth(cb) {
+    if (!client) return;
+    client.auth.onAuthStateChange(function (ev, s) {
+      setTimeout(function () { cb(s ? s.user : null, ev); }, 0);
+    });
+  }
 
   /* ---- CRUD (требует входа; запись разрешена политиками RLS только authenticated) ---- */
   async function saveProduct(p) {
