@@ -20,13 +20,18 @@ SQL Editor → выполните [`seed-products.sql`](./seed-products.sql)
 (сгенерирован из текущего прайса; цены, категории и характеристики сохранены).
 Файл пересоздаётся командой: `python3 build/migrate_to_products.py`.
 
-## Шаг 4. Создать администратора
+## Шаг 4. Создать администратора (вход на сайте — только по паролю)
 Supabase → **Authentication**:
-- **Providers → Email**: включить.
-- **Sign In / Providers → Allow new users to sign up**: ВЫКЛючить (чтобы регистрироваться могли только вы).
-- **Users → Add user → Create new user**: введите email и пароль — это и есть логин/пароль для входа в `/admin.html`. Пароль нигде в коде не хранится, его проверяет Supabase.
+- **Providers → Email**: включить. «Confirm email» можно отключить (быстрее).
+- **Allow new users to sign up**: ВЫКЛючить (регистрироваться можете только вы).
+- **Users → Add user → Create new user**:
+  - **Email**: `admin@aquauzel.kz` — служебный, фиксированный. Он уже прописан в `assets/js/supabase-config.js` (`adminEmail`); на сайте его вводить не нужно.
+  - **Password**: задайте пароль администратора.
+- На странице `/admin.html` вводится **только пароль** — email подставляется автоматически.
 
-Сменить пароль администратора позже: там же, Authentication → Users → … → Reset/Update.
+Сменить пароль позже: Authentication → Users → … → Reset/Update password.
+Сам пароль в репозитории НЕ хранится (его проверяет Supabase). Если измените
+служебный email — поправьте `adminEmail` в `assets/js/supabase-config.js`.
 
 ## Шаг 5. Подключить сайт к проекту
 Supabase → **Project Settings → API**, скопируйте:

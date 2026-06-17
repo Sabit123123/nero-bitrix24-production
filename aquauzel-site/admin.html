@@ -26,8 +26,8 @@
   <form class="adm-card adm-login" id="loginForm" autocomplete="on">
     <img src="assets/img/logo-full.png" alt="AquaUzel" height="56">
     <h1>Вход в админку</h1>
-    <label>Email<input type="email" id="email" required autocomplete="username" inputmode="email"></label>
-    <label>Пароль<input type="password" id="password" required autocomplete="current-password"></label>
+    <input type="text" id="email" autocomplete="username" hidden>
+    <label>Пароль<input type="password" id="password" required autocomplete="current-password" autofocus></label>
     <button class="btn btn-primary" type="submit" id="loginBtn">Войти</button>
     <p class="adm-error" id="loginError" hidden></p>
     <a class="adm-link" href="index.html">← Вернуться на сайт</a>
@@ -64,6 +64,10 @@
 </div>
 
 <div class="adm-toast" id="toast" hidden></div>
+
+<!-- пасхалка (только на админке можно заменить картинку) -->
+<img id="vova" class="vova-egg" alt="" aria-hidden="true" data-src="assets/img/vova.png">
+<input type="file" id="vovaFile" accept="image/*" hidden>
 
 <!-- шаблон карточки товара -->
 <template id="cardTpl">

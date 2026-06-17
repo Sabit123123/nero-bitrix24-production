@@ -496,4 +496,6 @@ section[id],#top{scroll-margin-top:88px}
 .vova-egg{position:fixed;right:6vw;bottom:0;width:min(230px,42vw);z-index:1200;pointer-events:none;
   filter:drop-shadow(0 -12px 28px rgba(0,0,0,.55));transform:translateY(110%);
   transition:transform .75s cubic-bezier(.34,1.45,.64,1)}
-.vova-egg.peek{transform:translateY(46%);pointer-events:auto;cursor:pointer}
+.vova-egg.peek{transform:translateY(46%)}
+/* кликабельной (для замены картинки) «Вова» делается только в админке */
+body.admin .vova-egg.peek{pointer-events:auto;cursor:pointer}

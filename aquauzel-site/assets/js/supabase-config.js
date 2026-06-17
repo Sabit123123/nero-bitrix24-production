@@ -12,5 +12,8 @@
 window.AQUA_SUPABASE = {
   url: "",       // напр. https://abcdefgh.supabase.co
   anonKey: "",   // anon public key (длинная строка eyJ...)
-  bucket: "product-images"
+  bucket: "product-images",
+  // Служебный email для входа администратора (вы вводите его ОДИН раз при
+  // создании пользователя в Supabase; на сайте вводится только пароль).
+  adminEmail: "admin@aquauzel.kz"
 };
