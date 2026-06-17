@@ -175,16 +175,46 @@
     $(".f-name", node).focus();
   }
 
+  /* ---------- пасхалка: на админке можно заменить картинку «Вовы» ---------- */
+  function initEgg() {
+    var trigger = $(".adm-title"), vova = document.getElementById("vova"),
+        file = document.getElementById("vovaFile"), clicks = 0, busy = false;
+    if (!trigger || !vova) return;
+    function eggSrc() { try { return localStorage.getItem("aqua_egg_img") || vova.dataset.src; } catch (e) { return vova.dataset.src; } }
+    trigger.title = "🙂";
+    trigger.addEventListener("click", function () { if (++clicks >= 20 && !busy) { clicks = 0; play(); } });
+    vova.addEventListener("click", function () { if (vova.classList.contains("peek") && file) file.click(); });
+    if (file) file.addEventListener("change", function (e) {
+      var f = e.target.files[0]; e.target.value = "";
+      if (!f || f.type.indexOf("image/") !== 0) return;
+      var r = new FileReader();
+      r.onload = function () { vova.setAttribute("src", r.result); try { localStorage.setItem("aqua_egg_img", r.result); } catch (x) {} };
+      r.readAsDataURL(f);
+    });
+    function play() {
+      busy = true; var s = eggSrc(); if (s && vova.getAttribute("src") !== s) vova.setAttribute("src", s);
+      var n = 0;
+      (function peek() {
+        vova.classList.add("peek");
+        setTimeout(function () { vova.classList.remove("peek");
+          if (++n < 3) setTimeout(peek, 520); else setTimeout(function () { busy = false; }, 800);
+        }, 1400);
+      })();
+    }
+  }
+
   /* ---------- старт ---------- */
   document.addEventListener("DOMContentLoaded", function () {
     if (!S || !S.isConfigured()) { show("needConfig"); return; }
+    var em = $("#email");
+    if (em) em.value = (window.AQUA_SUPABASE && window.AQUA_SUPABASE.adminEmail) || "admin@aquauzel.kz";
     initAuth();
     ["search", "filterCat", "filterStock", "sortBy"].forEach(function (id) {
       var n = document.getElementById(id);
       n.addEventListener(id === "search" ? "input" : "change", render);
     });
     $("#addBtn").addEventListener("click", addBlank);
-    // начальный экран определит onAuth (login или app)
+    initEgg();
     show("login");
   });
 })();

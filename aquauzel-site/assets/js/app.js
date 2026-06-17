@@ -247,35 +247,17 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
-    // easter egg: 20 кликов по логотипу — «Вова» выглядывает снизу экрана.
-    // Если успеть кликнуть по нему, пока он виден, — можно заменить картинку любой своей.
-    var brand = $(".brand"), vova = $("#vova"), vovaFile = $("#vovaFile"), vovaClicks = 0, vovaBusy = false;
-    function eggSrc() {
-      var saved = null;
-      try { saved = localStorage.getItem("aqua_egg_img"); } catch (e) {}
-      return saved || (vova && vova.dataset.src);
-    }
+    // easter egg (публичная страница): 20 кликов по логотипу — «Вова» выглядывает снизу.
+    // Картинка ВСЕГДА оригинальная; замена изображения доступна только в админке.
+    var brand = $(".brand"), vova = $("#vova"), vovaClicks = 0, vovaBusy = false;
     if (brand && vova) {
       brand.addEventListener("click", function () {
         if (++vovaClicks >= 20 && !vovaBusy) { vovaClicks = 0; playVova(); }
       });
-      vova.addEventListener("click", function () {
-        if (vova.classList.contains("peek") && vovaFile) vovaFile.click();
-      });
     }
-    if (vovaFile) vovaFile.addEventListener("change", function (e) {
-      var f = e.target.files[0]; e.target.value = "";
-      if (!f || f.type.indexOf("image/") !== 0) return;
-      var r = new FileReader();
-      r.onload = function () {
-        vova.setAttribute("src", r.result);
-        try { localStorage.setItem("aqua_egg_img", r.result); } catch (x) { /* слишком большое — останется на сессию */ }
-      };
-      r.readAsDataURL(f);
-    });
     function playVova() {
       vovaBusy = true;
-      var s = eggSrc(); if (s && vova.getAttribute("src") !== s) vova.setAttribute("src", s);
+      if (vova.dataset.src && !vova.getAttribute("src")) vova.setAttribute("src", vova.dataset.src);
       var n = 0;
       (function peek() {
         vova.classList.add("peek");
@@ -283,7 +265,7 @@
           vova.classList.remove("peek");
           if (++n < 3) setTimeout(peek, 520);
           else setTimeout(function () { vovaBusy = false; }, 800);
-        }, 1400); // держим дольше, чтобы успеть кликнуть и заменить
+        }, 1400);
       })();
     }
 
