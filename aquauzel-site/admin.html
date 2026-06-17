@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>AquaUzel — Админка товаров</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+<link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body class="admin">
+
+<!-- Supabase не настроен -->
+<div id="needConfig" class="adm-screen" hidden>
+  <div class="adm-card adm-msg">
+    <h1>Админка не настроена</h1>
+    <p>Чтобы включить админку, заполните <code>assets/js/supabase-config.js</code> (URL и anon-ключ проекта Supabase) и выполните <code>supabase/schema.sql</code>. Подробности — в <code>supabase/README.md</code>.</p>
+    <a class="btn btn-ghost" href="index.html">← На сайт</a>
+  </div>
+</div>
+
+<!-- Вход -->
+<div id="login" class="adm-screen" hidden>
+  <form class="adm-card adm-login" id="loginForm" autocomplete="on">
+    <img src="assets/img/logo-full.png" alt="AquaUzel" height="56">
+    <h1>Вход в админку</h1>
+    <label>Email<input type="email" id="email" required autocomplete="username" inputmode="email"></label>
+    <label>Пароль<input type="password" id="password" required autocomplete="current-password"></label>
+    <button class="btn btn-primary" type="submit" id="loginBtn">Войти</button>
+    <p class="adm-error" id="loginError" hidden></p>
+    <a class="adm-link" href="index.html">← Вернуться на сайт</a>
+  </form>
+</div>
+
+<!-- Приложение -->
+<div id="app" class="adm-app" hidden>
+  <header class="adm-top">
+    <a class="adm-brand" href="index.html"><img src="assets/img/logo-full.png" alt="AquaUzel" height="40"></a>
+    <span class="adm-title">Товары</span>
+    <span class="adm-user" id="userEmail"></span>
+    <button class="btn btn-ghost btn-sm" id="logoutBtn" type="button">Выйти</button>
+  </header>
+
+  <div class="adm-toolbar">
+    <div class="adm-search">
+      <input type="search" id="search" placeholder="Поиск по названию, категории, характеристикам…" autocomplete="off">
+    </div>
+    <select id="filterCat" class="adm-select" aria-label="Категория"><option value="">Все категории</option></select>
+    <select id="filterStock" class="adm-select" aria-label="Наличие">
+      <option value="">Все</option><option value="1">В наличии</option><option value="0">Нет в наличии</option>
+    </select>
+    <select id="sortBy" class="adm-select" aria-label="Сортировка">
+      <option value="name">По названию</option><option value="category">По категории</option>
+      <option value="price">По цене</option><option value="updated">По изменению</option>
+    </select>
+    <button class="btn btn-primary" id="addBtn" type="button">+ Добавить товар</button>
+  </div>
+
+  <p class="adm-count" id="count"></p>
+  <div class="adm-grid" id="products"></div>
+  <p class="adm-empty" id="empty" hidden>Товаров пока нет. Нажмите «Добавить товар».</p>
+</div>
+
+<div class="adm-toast" id="toast" hidden></div>
+
+<!-- шаблон карточки товара -->
+<template id="cardTpl">
+  <article class="adm-product" data-id="">
+    <div class="adm-photo">
+      <img class="adm-prev" alt="" hidden>
+      <div class="adm-photo-ph">Фото</div>
+      <label class="adm-photo-btn">
+        <input type="file" accept="image/*" hidden>
+        <span>Загрузить фото</span>
+      </label>
+      <button type="button" class="adm-photo-del" hidden>Убрать фото</button>
+    </div>
+    <div class="adm-fields">
+      <label>Наименование<input class="f-name" type="text"></label>
+      <div class="adm-row2">
+        <label>Кол-во в упаковке<input class="f-pack" type="text" inputmode="numeric"></label>
+        <label>Цена, ₸<input class="f-price" type="number" inputmode="decimal" min="0" step="1"></label>
+      </div>
+      <label>Категория<input class="f-cat" type="text" list="catList"></label>
+      <label>Характеристики<textarea class="f-char" rows="2"></textarea></label>
+      <label class="adm-check"><input class="f-stock" type="checkbox" checked> В наличии</label>
+      <div class="adm-actions">
+        <button type="button" class="btn btn-primary btn-sm f-save">Сохранить</button>
+        <button type="button" class="btn btn-danger btn-sm f-del">Удалить</button>
+      </div>
+    </div>
+  </article>
+</template>
+<datalist id="catList"></datalist>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/admin.js"></script>
+</body>
+</html>

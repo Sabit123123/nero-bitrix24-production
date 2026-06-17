@@ -247,24 +247,43 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
-    // easter egg: 20 кликов по логотипу — «Вова» выглядывает снизу экрана
-    var brand = $(".brand"), vova = $("#vova"), vovaClicks = 0, vovaBusy = false;
+    // easter egg: 20 кликов по логотипу — «Вова» выглядывает снизу экрана.
+    // Если успеть кликнуть по нему, пока он виден, — можно заменить картинку любой своей.
+    var brand = $(".brand"), vova = $("#vova"), vovaFile = $("#vovaFile"), vovaClicks = 0, vovaBusy = false;
+    function eggSrc() {
+      var saved = null;
+      try { saved = localStorage.getItem("aqua_egg_img"); } catch (e) {}
+      return saved || (vova && vova.dataset.src);
+    }
     if (brand && vova) {
       brand.addEventListener("click", function () {
         if (++vovaClicks >= 20 && !vovaBusy) { vovaClicks = 0; playVova(); }
       });
+      vova.addEventListener("click", function () {
+        if (vova.classList.contains("peek") && vovaFile) vovaFile.click();
+      });
     }
+    if (vovaFile) vovaFile.addEventListener("change", function (e) {
+      var f = e.target.files[0]; e.target.value = "";
+      if (!f || f.type.indexOf("image/") !== 0) return;
+      var r = new FileReader();
+      r.onload = function () {
+        vova.setAttribute("src", r.result);
+        try { localStorage.setItem("aqua_egg_img", r.result); } catch (x) { /* слишком большое — останется на сессию */ }
+      };
+      r.readAsDataURL(f);
+    });
     function playVova() {
       vovaBusy = true;
-      if (vova.dataset.src && !vova.getAttribute("src")) vova.setAttribute("src", vova.dataset.src);
+      var s = eggSrc(); if (s && vova.getAttribute("src") !== s) vova.setAttribute("src", s);
       var n = 0;
       (function peek() {
         vova.classList.add("peek");
         setTimeout(function () {
           vova.classList.remove("peek");
-          if (++n < 3) setTimeout(peek, 460);
+          if (++n < 3) setTimeout(peek, 520);
           else setTimeout(function () { vovaBusy = false; }, 800);
-        }, 1000);
+        }, 1400); // держим дольше, чтобы успеть кликнуть и заменить
       })();
     }
 
@@ -375,14 +394,52 @@
     }
   }
 
+  /* ---- скачивание прайса: CSV из текущих данных (работает в обоих режимах) ---- */
+  function csvCell(v) { v = String(v == null ? "" : v); return /[";\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+  function downloadPrice() {
+    var lines = [["Категория", "Наименование", "Характеристики", "Наличие", "Цена (" + CUR + ")"]];
+    DATA.categories.forEach(function (cat) {
+      cat.groups.forEach(function (g) {
+        var cols = g.columns;
+        var pis = cols.map(function (c, i) { return isPriceCol(c) ? i : -1; }).filter(function (i) { return i >= 0; });
+        var stockIdx = -1; cols.forEach(function (c, i) { if (/налич/i.test(c)) stockIdx = i; });
+        g.rows.forEach(function (r) {
+          var det = [];
+          cols.forEach(function (c, i) { if (i !== 0 && pis.indexOf(i) < 0 && i !== stockIdx && r[i]) det.push(c + ": " + r[i]); });
+          (pis.length ? pis : [-1]).forEach(function (pi) {
+            var label = pi >= 0 ? cols[pi] : "";
+            var suff = label.indexOf("·") >= 0 ? " [" + label.split("·")[0].trim() + "]" : "";
+            var name = (g.title ? g.title + " — " : "") + (r[0] || "") + suff;
+            lines.push([cat.name, name, det.join("; "),
+              stockIdx >= 0 ? (r[stockIdx] || "") : "", pi >= 0 ? (r[pi] || "") : ""]);
+          });
+        });
+      });
+    });
+    var csv = "﻿" + lines.map(function (row) { return row.map(csvCell).join(";"); }).join("\r\n");
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    a.download = "AquaUzel-прайс.csv"; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  }
+
   /* ---- boot ---- */
+  function renderPrice() { renderCatalog(); renderTabs(); renderCategory(0); initSearch(); }
+  async function boot() {
+    if (window.AquaStore && AquaStore.isConfigured()) {
+      try {
+        var products = await AquaStore.getProducts();
+        if (products && products.length) { DATA = AquaStore.toPriceData(products, CUR); window.AQUA_PRICES = DATA; }
+      } catch (e) { /* откат на статический прайс */ }
+    }
+    renderPrice();
+    var dl = document.getElementById("dlPrice");
+    if (dl) dl.addEventListener("click", downloadPrice);
+    initEffects();
+  }
   document.addEventListener("DOMContentLoaded", function () {
     renderFeatures();
-    renderCatalog();
-    renderTabs();
-    renderCategory(0);
-    initSearch();
     initChrome();
-    initEffects();
+    boot();
   });
 })();
