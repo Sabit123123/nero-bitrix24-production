@@ -179,10 +179,10 @@
           <input type="search" id="price-search" placeholder="Поиск по товарам: труба 25, кран, муфта…" aria-label="Поиск по прайсу" autocomplete="off">
           <button type="button" id="search-clear" class="search-clear" aria-label="Очистить" hidden>&times;</button>
         </div>
-        <a class="btn btn-primary price-dl" href="assets/files/AquaUzel-price.pdf" download="AquaUzel-прайс.pdf">
+        <button class="btn btn-primary price-dl" id="dlPrice" type="button">
           <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20"><path fill="currentColor" d="M12 3a1 1 0 0 1 1 1v9.59l2.3-2.3 1.4 1.42L12 17.4l-4.7-4.7 1.4-1.41 2.3 2.3V4a1 1 0 0 1 1-1ZM5 19h14v2H5z"/></svg>
-          Скачать прайс (PDF)
-        </a>
+          Скачать прайс (CSV)
+        </button>
       </div>
 
       <div class="tabs" id="price-tabs" role="tablist" aria-label="Категории прайса"></div>
@@ -369,8 +369,12 @@
 </a>
 
 <img id="vova" class="vova-egg" alt="" aria-hidden="true" data-src="assets/img/vova.png">
+<input type="file" id="vovaFile" accept="image/*" hidden>
 
 <script src="assets/js/prices-data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/store.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>
