@@ -22,6 +22,8 @@ body.admin{min-height:100dvh}
 .adm-card input,.adm-card textarea,.adm-select,.adm-product input,.adm-product textarea{
   background:var(--surface-2);border:1px solid var(--border-strong);border-radius:11px;
   color:#fff;padding:11px 13px;font:inherit;font-size:.95rem;outline:none;width:100%}
+/* выпадающий список селекта: тёмный фон, светлый текст (иначе бывает белое на белом) */
+.adm-select option,.adm-product input option,.adm-card select option{background:#0d1526;color:#fff}
 .adm-card input:focus,.adm-product input:focus,.adm-product textarea:focus,.adm-select:focus{
   border-color:var(--primary);box-shadow:0 0 0 3px rgba(42,157,244,.16)}
 .adm-error{color:#ff8a8a;font-size:.88rem;margin:0}
