@@ -7,10 +7,11 @@ body.admin{min-height:100dvh}
 
 /* экраны входа / сообщения */
 .adm-screen{min-height:100dvh;display:grid;place-items:center;padding:24px}
-/* Атрибут hidden ДОЛЖЕН побеждать display из классов выше. Иначе экран входа
-   (.adm-screen{display:grid}) не скрывается после успешного входа и перекрывает
-   собой админку (.adm-app), которую при этом выталкивает за пределы экрана. */
-.adm-screen[hidden],.adm-app[hidden]{display:none!important}
+/* Атрибут hidden ДОЛЖЕН побеждать display из классов: у .adm-screen, .adm-photo-ph,
+   .adm-photo-busy и др. стоит display:grid/flex, который иначе перебивает [hidden],
+   и элемент остаётся виден (так «не скрывался» экран входа после входа, а плейсхолдер
+   и оверлей «Загрузка…» висели поверх фото). Делаем [hidden] главным во всей админке. */
+[hidden]{display:none!important}
 .adm-load-error{margin:8px 0}
 .adm-card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border);
   border-radius:var(--r-lg);padding:30px;box-shadow:var(--shadow);backdrop-filter:blur(10px)}
@@ -48,14 +49,23 @@ body.admin{min-height:100dvh}
 .adm-product{display:flex;gap:14px;padding:16px;border-radius:var(--r-lg);
   background:var(--surface);border:1px solid var(--border)}
 .adm-product.dirty{border-color:var(--primary)}
-.adm-photo{flex:0 0 104px;display:flex;flex-direction:column;gap:7px;align-items:center}
-.adm-photo .adm-prev{width:104px;height:104px;object-fit:cover;border-radius:12px;border:1px solid var(--border)}
-.adm-photo-ph{width:104px;height:104px;border-radius:12px;display:grid;place-items:center;
+.adm-photo{flex:0 0 112px;position:relative;display:flex;flex-direction:column;gap:7px;align-items:center}
+.adm-photo .adm-prev{width:112px;height:112px;object-fit:cover;border-radius:12px;border:1px solid var(--border)}
+.adm-photo-ph{width:112px;height:112px;border-radius:12px;display:grid;place-items:center;
   background:var(--surface-2);border:1px dashed var(--border-strong);color:var(--muted);font-size:.8rem}
-.adm-photo-btn{cursor:pointer;font-size:.76rem;font-weight:700;color:var(--primary);
-  text-align:center;padding:6px 8px;border:1px solid var(--border-strong);border-radius:9px;width:104px}
-.adm-photo-btn:hover{background:var(--surface-2)}
-.adm-photo-del{font-size:.72rem;color:#ff8a8a;background:none;border:none;cursor:pointer}
+.adm-photo-busy{position:absolute;top:0;left:0;width:112px;height:112px;border-radius:12px;
+  display:grid;place-items:center;background:rgba(8,13,24,.72);color:#fff;font-size:.78rem;font-weight:700;z-index:2}
+.adm-photo-actions{display:flex;gap:6px;width:112px}
+.adm-photo-btn{flex:1;min-width:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;
+  font-size:.66rem;font-weight:700;color:var(--primary);text-align:center;
+  padding:6px 4px;border:1px solid var(--border-strong);border-radius:9px}
+.adm-photo-btn svg{width:18px;height:18px}
+.adm-photo-btn:hover{background:var(--surface-2);border-color:var(--primary)}
+.adm-photo-del{display:flex;align-items:center;justify-content:center;gap:5px;width:112px;
+  font-size:.72rem;font-weight:600;color:#ff8a8a;background:none;border:none;cursor:pointer;padding:2px}
+.adm-photo-del svg{width:14px;height:14px}
+.adm-photo-del:hover{color:#ff6b6b}
+.photo-uploading .adm-photo-btn,.photo-uploading .adm-photo-del{pointer-events:none;opacity:.5}
 .adm-fields{flex:1;min-width:0;display:flex;flex-direction:column;gap:9px}
 .adm-fields label{display:flex;flex-direction:column;gap:4px;font-size:.74rem;color:var(--muted);font-weight:600}
 .adm-row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
@@ -73,8 +83,10 @@ body.admin{min-height:100dvh}
 
 @media (max-width:560px){
   .adm-product{flex-direction:column}
-  .adm-photo{flex-direction:row;flex-wrap:wrap;justify-content:flex-start}
+  .adm-photo{flex-direction:row;flex-wrap:wrap;justify-content:flex-start;align-items:flex-start}
   .adm-photo .adm-prev,.adm-photo-ph{width:84px;height:84px}
-  .adm-photo-btn{width:auto}
+  .adm-photo-busy{width:84px;height:84px;font-size:.7rem}
+  .adm-photo-actions{width:auto}
+  .adm-photo-del{width:auto}
   .adm-select{flex:1;min-width:0}
 }

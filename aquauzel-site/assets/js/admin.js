@@ -136,7 +136,13 @@
     node.dataset.id = p.id || "";
     node.dataset.image = p.image || "";
     var prev = $(".adm-prev", node), ph = $(".adm-photo-ph", node), del = $(".adm-photo-del", node);
-    if (p.image) { prev.src = p.image; prev.hidden = false; ph.hidden = true; del.hidden = false; }
+    var busy = $(".adm-photo-busy", node);
+    function setPhoto(url) {
+      node.dataset.image = url || "";
+      if (url) { prev.src = url; prev.hidden = false; ph.hidden = true; del.hidden = false; }
+      else { prev.removeAttribute("src"); prev.hidden = true; ph.hidden = false; del.hidden = true; }
+    }
+    if (p.image) setPhoto(p.image);
     $(".f-name", node).value = p.name || "";
     $(".f-pack", node).value = p.pack_quantity || "";
     $(".f-price", node).value = (p.price === 0 || p.price) ? p.price : "";
@@ -148,26 +154,30 @@
       f.addEventListener("input", function () { node.classList.add("dirty"); });
     });
 
-    // фото: выбор -> валидация/сжатие/загрузка -> превью
-    $(".adm-photo-btn input", node).addEventListener("change", async function (e) {
-      var file = e.target.files[0]; if (!file) return;
-      var label = $(".adm-photo-btn span", node), old = label.textContent;
-      label.textContent = "Загрузка…";
+    // фото: камера/галерея -> валидация/сжатие/загрузка -> превью (заменяет старое фото)
+    async function handlePhotoFile(file) {
+      if (!file) return;
+      if (busy) busy.hidden = false;
+      node.classList.add("photo-uploading");
       try {
         var oldUrl = node.dataset.image;
         var up = await S.uploadImage(file);
-        node.dataset.image = up.url;
-        prev.src = up.url; prev.hidden = false; ph.hidden = true; del.hidden = false;
+        setPhoto(up.url);
         node.classList.add("dirty");
-        if (oldUrl && oldUrl !== up.url) S.deleteImageByUrl(oldUrl);
-        toast("Фото загружено — не забудьте «Сохранить»");
+        if (oldUrl && oldUrl !== up.url) S.deleteImageByUrl(oldUrl);   // удаляем заменённое фото из хранилища
+        toast(oldUrl ? "Фото заменено — не забудьте «Сохранить»" : "Фото загружено — не забудьте «Сохранить»");
       } catch (ex) { toast(ex.message, true); }
-      finally { label.textContent = old; e.target.value = ""; }
+      finally { if (busy) busy.hidden = true; node.classList.remove("photo-uploading"); }
+    }
+    node.querySelectorAll(".adm-photo-btn input").forEach(function (inp) {
+      inp.addEventListener("change", function (e) { var f = e.target.files[0]; e.target.value = ""; handlePhotoFile(f); });
     });
     del.addEventListener("click", function () {
-      var u = node.dataset.image; node.dataset.image = "";
-      prev.hidden = true; ph.hidden = false; del.hidden = true; node.classList.add("dirty");
+      if (!node.dataset.image) return;
+      if (!confirm("Удалить фото товара?")) return;
+      var u = node.dataset.image; setPhoto(""); node.classList.add("dirty");
       if (u) S.deleteImageByUrl(u);
+      toast("Фото удалено — не забудьте «Сохранить»");
     });
 
     // сохранить
