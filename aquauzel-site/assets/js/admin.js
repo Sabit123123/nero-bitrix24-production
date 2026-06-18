@@ -27,9 +27,16 @@
   function enterApp(user) {
     if (entered) return;            // защита от повторного входа по событию onAuth
     entered = true;
+    console.log("[admin] login success → переключаю интерфейс на админку");
     var ue = $("#userEmail"); if (ue) ue.textContent = (user && user.email) || "";
+    // Показ админки и загрузка товаров разделены: даже если загрузка упадёт,
+    // интерфейс уже виден, а ошибка показывается ВНУТРИ админки.
+    console.log("[admin] before show admin");
     show("app");
-    loadProducts();
+    console.log("[admin] after show admin (app.hidden =",
+      document.getElementById("app") && document.getElementById("app").hidden, ")");
+    console.log("[admin] before load products");
+    loadProducts().then(function () { console.log("[admin] after load products"); });
   }
   function resetLoginBtn() {
     var btn = $("#loginBtn"); if (btn) { btn.disabled = false; btn.textContent = "Войти"; }
@@ -66,13 +73,24 @@
   }
 
   /* ---------- загрузка и рендер ---------- */
+  function showLoadError(msg) {
+    var el = $("#loadError"); if (!el) return;
+    if (msg) { el.textContent = msg; el.hidden = false; } else { el.textContent = ""; el.hidden = true; }
+  }
   async function loadProducts() {
+    showLoadError("");                                  // сбросить прошлую ошибку
     try {
       state.products = (await S.getProducts()) || [];
       state.cats = Array.from(new Set(state.products.map(function (p) { return p.category; }).filter(Boolean))).sort();
       fillCats();
       render();
-    } catch (e) { toast("Ошибка загрузки: " + e.message, true); }
+    } catch (e) {
+      // Админка уже показана — товары не загрузились, но входом это не ломаем.
+      console.error("[admin] ошибка загрузки товаров:", e);
+      var m = (e && e.message) ? e.message : "ошибка сети";
+      toast("Ошибка загрузки товаров: " + m, true);
+      showLoadError("Не удалось загрузить товары: " + m + ". Админка доступна — обновите страницу или повторите позже.");
+    }
   }
 
   function fillCats() {

@@ -7,6 +7,11 @@ body.admin{min-height:100dvh}
 
 /* экраны входа / сообщения */
 .adm-screen{min-height:100dvh;display:grid;place-items:center;padding:24px}
+/* Атрибут hidden ДОЛЖЕН побеждать display из классов выше. Иначе экран входа
+   (.adm-screen{display:grid}) не скрывается после успешного входа и перекрывает
+   собой админку (.adm-app), которую при этом выталкивает за пределы экрана. */
+.adm-screen[hidden],.adm-app[hidden]{display:none!important}
+.adm-load-error{margin:8px 0}
 .adm-card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border);
   border-radius:var(--r-lg);padding:30px;box-shadow:var(--shadow);backdrop-filter:blur(10px)}
 .adm-login{display:flex;flex-direction:column;gap:14px;text-align:center}
