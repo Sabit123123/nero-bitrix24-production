@@ -1,0 +1,6 @@
+# Graphify: храним граф (graph.json / отчёт / визуализацию), но не временный AST-кэш
+graphify-out/cache/
+
+# OS / редакторы
+.DS_Store
+Thumbs.db

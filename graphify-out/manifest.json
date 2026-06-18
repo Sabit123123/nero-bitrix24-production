@@ -1,0 +1,232 @@
+{
+  ".claude/settings.json": {
+    "mtime": 1781788964.9461093,
+    "ast_hash": "e1073342e958ac9f00716938c8f165e3",
+    "semantic_hash": ""
+  },
+  ".claude/skills/ui-ux-pro-max/data/_sync_all.py": {
+    "mtime": 1781753229.5747201,
+    "ast_hash": "c5102d726b2b4bdba1c4b7e3d5a55c52",
+    "semantic_hash": ""
+  },
+  ".claude/skills/ui-ux-pro-max/scripts/core.py": {
+    "mtime": 1781753229.5840528,
+    "ast_hash": "0c039e338b3cf639d1f1e3b6aac60b1c",
+    "semantic_hash": ""
+  },
+  ".claude/skills/ui-ux-pro-max/scripts/design_system.py": {
+    "mtime": 1781753229.5840528,
+    "ast_hash": "cd84bdf41f59970e6161e113470b6b06",
+    "semantic_hash": ""
+  },
+  ".claude/skills/ui-ux-pro-max/scripts/search.py": {
+    "mtime": 1781753229.5840528,
+    "ast_hash": "89f1dc15dbd0ecd96999deaf936e3166",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/data/prices.json": {
+    "mtime": 1781753229.5854015,
+    "ast_hash": "674bae06f41c3512403ddb51af8214d5",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/js/admin.js": {
+    "mtime": 1781770123.0755625,
+    "ast_hash": "b04a47bde9b03ebfc741e06308f4f92b",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/js/app.js": {
+    "mtime": 1781759328.0871131,
+    "ast_hash": "148c8feb915c571113d34748f83f63ab",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/js/prices-data.js": {
+    "mtime": 1781753229.6055121,
+    "ast_hash": "ea1d958edfcde6f1d236c3be4ddf5e11",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/js/store.js": {
+    "mtime": 1781759328.0871131,
+    "ast_hash": "3eb2237ad1043a6b9066df87d926f2ee",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/js/supabase-config.js": {
+    "mtime": 1781753229.6055121,
+    "ast_hash": "a76392bc39a67c5b3e0bafe264dd875b",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/supabase/schema.sql": {
+    "mtime": 1781753229.6166422,
+    "ast_hash": "ee58302fd9c321480dd055cfe21699bd",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/supabase/seed-products.sql": {
+    "mtime": 1781753229.6166422,
+    "ast_hash": "1509af3c8950d174d18ce5c1c975f0a4",
+    "semantic_hash": ""
+  },
+  "deploy/deploy.sh": {
+    "mtime": 1781771164.5080526,
+    "ast_hash": "4be6b27d6228972806897aba3fc2c3d2",
+    "semantic_hash": ""
+  },
+  ".claude/skills/ui-ux-pro-max/SKILL.md": {
+    "mtime": 1781753229.5741227,
+    "ast_hash": "333e886d9c027730a6a24b4f34fba801",
+    "semantic_hash": ""
+  },
+  ".github/workflows/deploy-pages.yml": {
+    "mtime": 1781753229.5848742,
+    "ast_hash": "9dbe0d73a522aa8435e9f0cbb803adfd",
+    "semantic_hash": ""
+  },
+  ".github/workflows/deploy-vps.yml": {
+    "mtime": 1781771164.5080526,
+    "ast_hash": "0cab7bdae50730251187d63c2221fe92",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1781788964.9457333,
+    "ast_hash": "82efb97a359f5c7290bf2513d14686be",
+    "semantic_hash": ""
+  },
+  "DEPLOY-VPS.md": {
+    "mtime": 1781771164.5080526,
+    "ast_hash": "3e66630a0251db426d2e3032616d335b",
+    "semantic_hash": ""
+  },
+  "GOOGLE-BUSINESS.md": {
+    "mtime": 1781772295.1750808,
+    "ast_hash": "0d13f9cacd4deb91c30222ad6b90dab6",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1781518477.3509119,
+    "ast_hash": "81d17d0f241fc52761429df8a8db1210",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/ADMIN.md": {
+    "mtime": 1781753229.584951,
+    "ast_hash": "f8c760b240a0fc9e7993b56d67be538a",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/DEPLOY.md": {
+    "mtime": 1781753229.584951,
+    "ast_hash": "8b383eb8736cc69b823083d8f046e5a4",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/IMAGE-PROMPTS.md": {
+    "mtime": 1781753229.584951,
+    "ast_hash": "7b0bfd9aead97183ed5d10422fec76d3",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/README.md": {
+    "mtime": 1781753229.584951,
+    "ast_hash": "07bf9e05a44f1c008008f6948f85c94a",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/admin.html": {
+    "mtime": 1781772039.658976,
+    "ast_hash": "878b9e9241a8648b3c3de94c3f934981",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/index.html": {
+    "mtime": 1781787890.4115994,
+    "ast_hash": "e6581b86b5a53122fcb4ba6dcc0aa095",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/robots.txt": {
+    "mtime": 1781771164.5080526,
+    "ast_hash": "3cd81eaa009630e748e0fe0e8404a591",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/supabase/README.md": {
+    "mtime": 1781753229.6124432,
+    "ast_hash": "3a3d89ac08958eb3efda74cf9830522e",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/files/AquaUzel-price.pdf": {
+    "mtime": 1781753229.5884433,
+    "ast_hash": "e513ab38caf84749ab0c42958c560459",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/favicon.svg": {
+    "mtime": 1781753229.5884433,
+    "ast_hash": "5e866ee755ba712ff3dec53b6579ad58",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/hero-product.png": {
+    "mtime": 1781753229.5924432,
+    "ast_hash": "26b5736d9e615fb65b80e57d8c2784af",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/logo-full.png": {
+    "mtime": 1781753229.5924432,
+    "ast_hash": "397502354d66dbc964fd99319a3f91ed",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/logo-mark.png": {
+    "mtime": 1781753229.5924432,
+    "ast_hash": "066c123bc933be262f42b091a783651a",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/logo-wordmark-light.png": {
+    "mtime": 1781753229.5924432,
+    "ast_hash": "ba965c715a80a1bb23d7408336cd744d",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/logo-wordmark.png": {
+    "mtime": 1781753229.5964434,
+    "ast_hash": "692c30ae0864dca6e5e4b5e8f8519469",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/manifold.svg": {
+    "mtime": 1781753229.5964434,
+    "ast_hash": "de2298a68f0182098349893b5c48f6dd",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/og-cover.jpg": {
+    "mtime": 1781753229.5964434,
+    "ast_hash": "5929fffd9fbe8fceb5b7a58acbae88d6",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/qr-instagram.png": {
+    "mtime": 1781753229.5964434,
+    "ast_hash": "0a18ab9c531c3bbe7c2e005e449157a1",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/qr-whatsapp.png": {
+    "mtime": 1781753229.5964434,
+    "ast_hash": "c7bf8d82b288b1b04a22045c25d56045",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/qr.png": {
+    "mtime": 1781753229.5964434,
+    "ast_hash": "92bfa8e57c4491e9b4033bebfb857ff0",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/use/izolyaciya.jpg": {
+    "mtime": 1781753229.5964434,
+    "ast_hash": "88df75b88c12ed5d9f5b1f4912c0ae78",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/use/kanalizaciya.jpg": {
+    "mtime": 1781753229.6002667,
+    "ast_hash": "e9817a02ffda7e199531c801f29c1c86",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/use/otoplenie.jpg": {
+    "mtime": 1781753229.6004434,
+    "ast_hash": "a4007dfadfc06e41eb47ff4f869728eb",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/use/vodosnabzhenie.jpg": {
+    "mtime": 1781753229.6004434,
+    "ast_hash": "ddd70c07b5c18f8c8539f453e4d8e2f0",
+    "semantic_hash": ""
+  },
+  "aquauzel-site/assets/img/vova.png": {
+    "mtime": 1781753229.6004434,
+    "ast_hash": "6a9238788ca26ba7f3834c9f56c2e5bb",
+    "semantic_hash": ""
+  }
+}
