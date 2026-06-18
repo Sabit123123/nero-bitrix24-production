@@ -499,3 +499,15 @@ section[id],#top{scroll-margin-top:88px}
 .vova-egg.peek{transform:translateY(46%)}
 /* кликабельной (для замены картинки) «Вова» делается только в админке */
 body.admin .vova-egg.peek{pointer-events:auto;cursor:pointer}
+
+/* ---------- FAQ (вопросы и ответы) ---------- */
+.faq{max-width:840px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.faq-item{background:var(--surface);border:1px solid var(--border);border-radius:14px}
+.faq-item summary{list-style:none;cursor:pointer;padding:17px 20px;font-weight:700;font-size:1.02rem;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;color:#fff}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{content:"+";font-size:1.5rem;line-height:1;color:var(--primary-2);transition:transform .2s}
+.faq-item[open] summary::after{content:"−"}
+.faq-item summary:hover{color:var(--primary-2)}
+.faq-a{padding:0 20px 18px;color:var(--text-dim);line-height:1.62}
+.faq-a p{margin:0}
