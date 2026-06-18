@@ -128,6 +128,7 @@
     list.forEach(function (p) { wrap.appendChild(buildCard(p)); });
     $("#count").textContent = "Показано: " + list.length + " из " + state.products.length;
     $("#empty").hidden = state.products.length !== 0;
+    syncListHead();
   }
 
   /* ---------- карточка товара ---------- */
@@ -259,17 +260,40 @@
 
   /* ---------- вид отображения: карточки / список / компактно ---------- */
   var VIEW_KEY = "aqua_admin_view";
-  function getView() { try { return localStorage.getItem(VIEW_KEY) || "cards"; } catch (e) { return "cards"; } }
-  function applyView(v) {
+  // По умолчанию на телефоне — «компактно», на ПК — «карточки».
+  function defaultView() {
+    try { return window.matchMedia("(max-width:560px)").matches ? "compact" : "cards"; } catch (e) { return "cards"; }
+  }
+  function getView() {
+    try { return localStorage.getItem(VIEW_KEY) || defaultView(); } catch (e) { return defaultView(); }
+  }
+  // Шапка таблицы для вида «список» (на ПК). На телефоне скрыта через CSS.
+  function buildListHead() {
+    var head = document.createElement("div");
+    head.className = "adm-list-head";
+    ["", "Наименование", "Упак.", "Цена, ₸", "Категория", "Нал.", ""].forEach(function (t) {
+      var s = document.createElement("span"); s.textContent = t; head.appendChild(s);
+    });
+    return head;
+  }
+  function syncListHead() {
+    var wrap = $("#products"); if (!wrap) return;
+    var head = wrap.querySelector(".adm-list-head");
+    var need = wrap.classList.contains("view-list");
+    if (need && !head) wrap.insertBefore(buildListHead(), wrap.firstChild);
+    else if (!need && head) head.remove();
+  }
+  function applyView(v, persist) {
     v = (v === "list" || v === "compact") ? v : "cards";
     var wrap = $("#products");
     if (wrap) { wrap.classList.remove("view-cards", "view-list", "view-compact"); wrap.classList.add("view-" + v); }
-    try { localStorage.setItem(VIEW_KEY, v); } catch (e) {}
+    syncListHead();
+    if (persist) { try { localStorage.setItem(VIEW_KEY, v); } catch (e) {} }
   }
   // Подсветка активных фильтров (иконки на мобильных): is-active, если значение
   // отличается от значения по умолчанию (первого варианта селекта).
   function markFilters() {
-    [["filterCat", ""], ["filterStock", ""], ["sortBy", "name"], ["viewMode", "cards"]].forEach(function (p) {
+    [["filterCat", ""], ["filterStock", ""], ["sortBy", "name"], ["viewMode", defaultView()]].forEach(function (p) {
       var sel = document.getElementById(p[0]); if (!sel) return;
       var box = sel.closest(".adm-filter"); if (!box) return;
       box.classList.toggle("is-active", sel.value !== p[1]);
@@ -294,8 +318,8 @@
     });
     var add = $("#addBtn"); if (add) add.addEventListener("click", addBlank);
     var vm = $("#viewMode");
-    if (vm) { vm.value = getView(); vm.addEventListener("change", function () { applyView(vm.value); markFilters(); }); }
-    applyView(getView());
+    if (vm) { vm.value = getView(); vm.addEventListener("change", function () { applyView(vm.value, true); markFilters(); }); }
+    applyView(getView(), false);
     markFilters();
     initEgg();
     show("login");

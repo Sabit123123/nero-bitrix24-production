@@ -89,8 +89,25 @@ body.admin{min-height:100dvh}
 .adm-actions .btn{flex:1}
 
 /* виды отображения товаров (переключаются селектом «Вид») */
-/* список — одна карточка в ряд на всю ширину (удобно редактировать по одному) */
-.adm-grid.view-list{grid-template-columns:1fr}
+/* список — компактные строки во всю ширину, как таблица (помещается больше) */
+.adm-grid.view-list{--list-cols:44px minmax(150px,2.4fr) 66px 92px minmax(110px,1.5fr) 56px 166px;
+  grid-template-columns:1fr;gap:6px}
+.adm-list-head{display:none}
+.view-list .adm-list-head{display:grid;grid-template-columns:var(--list-cols);align-items:center;gap:10px;
+  padding:6px 12px;color:var(--muted);font-size:.7rem;font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+.view-list .adm-product{display:grid;grid-template-columns:var(--list-cols);align-items:center;gap:10px;padding:8px 12px}
+.view-list .adm-product:nth-of-type(even){background:rgba(255,255,255,.022)}
+.view-list .adm-fields,.view-list .adm-row2{display:contents}
+.view-list .adm-fl,.view-list .adm-check{font-size:0!important;gap:0;margin:0}
+.view-list .adm-fields input,.view-list .adm-fields textarea{font-size:.9rem;padding:7px 9px}
+.view-list .adm-fl-char{display:none}
+.view-list .adm-check{justify-content:center}
+.view-list .adm-actions{margin:0;gap:6px}
+.view-list .adm-actions .btn{font-size:.74rem;padding:7px 4px}
+.view-list .adm-photo{flex:0 0 44px;width:44px}
+.view-list .adm-photo .adm-prev,.view-list .adm-photo-ph,.view-list .adm-photo-busy{width:44px;height:44px;border-radius:8px}
+.view-list .adm-photo-ph{font-size:.58rem}
+.view-list .adm-photo-actions,.view-list .adm-photo-del{display:none}
 /* компактно — более плотная сетка с уменьшёнными карточками (видно больше сразу) */
 .adm-grid.view-compact{grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
 .adm-grid.view-compact .adm-product{padding:11px;gap:11px}
@@ -135,6 +152,27 @@ body.admin{min-height:100dvh}
   .adm-filter-dot{display:none;position:absolute;top:-3px;right:-3px;width:11px;height:11px;border-radius:50%;
     background:var(--primary);border:2px solid var(--surface);pointer-events:none}
   .adm-filter.is-active .adm-filter-dot{display:block}
+
+  /* ---- виды на телефоне: стандарт = компактно, плюс «список» ---- */
+  .adm-grid.view-cards .adm-product{padding:12px;gap:12px}
+  /* список — компактные строки: наименование на 1-й строке (целиком),
+     цена/категория/кнопки на 2-й. Помещается заметно больше, чем карточки. */
+  .adm-list-head{display:none!important}
+  .adm-grid.view-list{grid-template-columns:1fr;gap:8px}
+  .view-list .adm-product{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:5px 8px;padding:9px 11px}
+  .view-list .adm-fields,.view-list .adm-row2{display:contents}
+  .view-list .adm-photo{order:1;flex:0 0 40px;width:40px}
+  .view-list .adm-photo .adm-prev,.view-list .adm-photo-ph,.view-list .adm-photo-busy{width:40px;height:40px}
+  .view-list .adm-photo-actions,.view-list .adm-photo-del{display:none}
+  .view-list .adm-fl{font-size:0!important;gap:0;margin:0;min-width:0}
+  .view-list .adm-fields input{font-size:.85rem;padding:6px 8px;width:100%}
+  .view-list .adm-fl-name{order:2;flex:1 1 calc(100% - 50px)}
+  .view-list .adm-fl-price{order:3;flex:0 0 76px}
+  .view-list .adm-fl-price input{text-align:right}
+  .view-list .adm-fl-cat{order:4;flex:1 1 70px}
+  .view-list .adm-actions{order:5;flex:0 0 auto;margin:0;gap:6px}
+  .view-list .adm-actions .btn{font-size:.72rem;padding:6px 9px}
+  .view-list .adm-fl-pack,.view-list .adm-fl-char,.view-list .adm-check{display:none}
 
   #addBtn{flex:1 1 100%}
 }
