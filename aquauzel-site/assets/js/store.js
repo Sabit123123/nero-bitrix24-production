@@ -35,9 +35,11 @@
 
   /* ---- преобразование плоских товаров -> структура прайса для рендера ---- */
   function toPriceData(products, cur) {
+    // На публичной части и в PDF показываем только товары «в наличии».
+    var visible = (products || []).filter(function (p) { return p && p.in_stock !== false; });
     var byCat = {};
     var order = [];
-    products.forEach(function (p) {
+    visible.forEach(function (p) {
       var cat = p.category || "Без категории";
       if (!byCat[cat]) { byCat[cat] = []; order.push(cat); }
       byCat[cat].push(p);
@@ -48,7 +50,6 @@
           p.name || "",
           p.pack_quantity || "",
           p.characteristics || "",
-          p.in_stock ? "В наличии" : "Под заказ",
           (p.price === 0 || p.price) ? String(p.price) : ""
         ];
       });
@@ -60,12 +61,12 @@
         count: rows.length,
         groups: [{
           title: cat,
-          columns: ["Наименование", "Упаковка", "Характеристики", "Наличие", "Цена"],
+          columns: ["Наименование", "Упаковка", "Характеристики", "Цена"],
           rows: rows
         }]
       };
     });
-    return { currency: cur || "₸", categories: categories, totalItems: products.length, __fromAdmin: true };
+    return { currency: cur || "₸", categories: categories, totalItems: visible.length, __fromAdmin: true };
   }
 
   /* ---- публичное чтение ---- */

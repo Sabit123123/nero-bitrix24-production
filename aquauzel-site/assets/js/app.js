@@ -562,7 +562,8 @@
       try {
         var products = await AquaStore.getProducts();
         if (products && products.length) {
-          RAW_PRODUCTS = products;                 // запоминаем фото для PDF-прайса
+          // для прайса/PDF берём только товары «в наличии» (фото — тоже из них)
+          RAW_PRODUCTS = products.filter(function (p) { return p && p.in_stock !== false; });
           DATA = AquaStore.toPriceData(products, CUR); window.AQUA_PRICES = DATA;
         }
       } catch (e) { /* откат на статический прайс */ }
