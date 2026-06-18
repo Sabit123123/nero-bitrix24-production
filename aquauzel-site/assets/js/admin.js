@@ -266,6 +266,15 @@
     if (wrap) { wrap.classList.remove("view-cards", "view-list", "view-compact"); wrap.classList.add("view-" + v); }
     try { localStorage.setItem(VIEW_KEY, v); } catch (e) {}
   }
+  // Подсветка активных фильтров (иконки на мобильных): is-active, если значение
+  // отличается от значения по умолчанию (первого варианта селекта).
+  function markFilters() {
+    [["filterCat", ""], ["filterStock", ""], ["sortBy", "name"], ["viewMode", "cards"]].forEach(function (p) {
+      var sel = document.getElementById(p[0]); if (!sel) return;
+      var box = sel.closest(".adm-filter"); if (!box) return;
+      box.classList.toggle("is-active", sel.value !== p[1]);
+    });
+  }
 
   /* ---------- старт ---------- */
   function start() {
@@ -281,12 +290,13 @@
     initAuth();
     ["search", "filterCat", "filterStock", "sortBy"].forEach(function (id) {
       var n = document.getElementById(id);
-      if (n) n.addEventListener(id === "search" ? "input" : "change", render);
+      if (n) n.addEventListener(id === "search" ? "input" : "change", function () { render(); markFilters(); });
     });
     var add = $("#addBtn"); if (add) add.addEventListener("click", addBlank);
     var vm = $("#viewMode");
-    if (vm) { vm.value = getView(); vm.addEventListener("change", function () { applyView(vm.value); }); }
+    if (vm) { vm.value = getView(); vm.addEventListener("change", function () { applyView(vm.value); markFilters(); }); }
     applyView(getView());
+    markFilters();
     initEgg();
     show("login");
   }

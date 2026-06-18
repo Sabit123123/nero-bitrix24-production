@@ -43,6 +43,11 @@ body.admin{min-height:100dvh}
 .adm-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:18px 0 10px}
 .adm-search{flex:1;min-width:200px}
 .adm-select{width:auto;min-width:140px;cursor:pointer}
+/* На ПК фильтры — обычные выпадающие списки с текстом (обёртки прозрачны,
+   иконки/точки скрыты). На мобильных (медиазапрос ниже) они становятся
+   компактными иконками с активным состоянием. */
+.adm-filters,.adm-filter{display:contents}
+.adm-filter>svg,.adm-filter-dot,.adm-search-ic{display:none}
 .adm-count{color:var(--muted);font-size:.85rem;margin:4px 0 14px}
 .adm-empty{text-align:center;color:var(--muted);padding:40px}
 
@@ -107,5 +112,29 @@ body.admin{min-height:100dvh}
   .adm-photo-busy{width:84px;height:84px;font-size:.7rem}
   .adm-photo-actions{width:auto}
   .adm-photo-del{width:auto}
-  .adm-select{flex:1;min-width:0}
+
+  /* мобильный тулбар: поиск со скруглёнными краями + иконка-лупа */
+  .adm-search{position:relative;flex:1 1 130px;min-width:130px}
+  .adm-search-ic{display:block;position:absolute;left:12px;top:50%;transform:translateY(-50%);
+    width:18px;height:18px;color:var(--muted);pointer-events:none}
+  .adm-search input{width:100%;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:14px;
+    color:#fff;padding:11px 12px 11px 38px;font-size:.95rem;-webkit-appearance:none;appearance:none}
+  .adm-search input::placeholder{color:var(--muted)}
+  .adm-search input::-webkit-search-cancel-button{-webkit-appearance:none}
+  .adm-search input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(42,157,244,.16)}
+
+  /* фильтры -> компактные иконки (активные подсвечиваются + точка) */
+  .adm-filters{display:flex;gap:8px;align-items:center}
+  .adm-filter{display:grid;position:relative;width:46px;height:46px;flex:0 0 auto;place-items:center;border-radius:13px;
+    background:var(--surface-2);border:1px solid var(--border-strong);color:var(--text-dim)}
+  .adm-filter>svg{display:block;width:20px;height:20px;pointer-events:none}
+  .adm-filter .adm-select{position:absolute;inset:0;width:100%;height:100%;min-width:0;opacity:0;
+    padding:0;border:0;cursor:pointer;-webkit-appearance:none;appearance:none}
+  .adm-filter:active{border-color:var(--primary)}
+  .adm-filter.is-active{border-color:var(--primary);color:var(--primary);background:rgba(42,157,244,.12)}
+  .adm-filter-dot{display:none;position:absolute;top:-3px;right:-3px;width:11px;height:11px;border-radius:50%;
+    background:var(--primary);border:2px solid var(--surface);pointer-events:none}
+  .adm-filter.is-active .adm-filter-dot{display:block}
+
+  #addBtn{flex:1 1 100%}
 }

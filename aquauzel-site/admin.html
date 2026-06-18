@@ -8,7 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/styles.css?v=3">
-<link rel="stylesheet" href="assets/css/admin.css?v=3">
+<link rel="stylesheet" href="assets/css/admin.css?v=4">
 </head>
 <body class="admin">
 
@@ -45,21 +45,40 @@
 
   <div class="adm-toolbar">
     <div class="adm-search">
+      <svg class="adm-search-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       <input type="search" id="search" placeholder="Поиск по названию, категории, характеристикам…" autocomplete="off">
     </div>
-    <select id="filterCat" class="adm-select" aria-label="Категория"><option value="">Все категории</option></select>
-    <select id="filterStock" class="adm-select" aria-label="Наличие">
-      <option value="">Все</option><option value="1">В наличии</option><option value="0">Нет в наличии</option>
-    </select>
-    <select id="sortBy" class="adm-select" aria-label="Сортировка">
-      <option value="name">По названию</option><option value="category">По категории</option>
-      <option value="price">По цене</option><option value="updated">По изменению</option>
-    </select>
-    <select id="viewMode" class="adm-select" aria-label="Вид отображения" title="Как показывать товары">
-      <option value="cards">Вид: карточки</option>
-      <option value="list">Вид: список</option>
-      <option value="compact">Вид: компактно</option>
-    </select>
+    <div class="adm-filters">
+      <label class="adm-filter" title="Категория">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.41 2.41 0 0 0 3.41 0l6.59-6.59a2.41 2.41 0 0 0 0-3.41z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
+        <select id="filterCat" class="adm-select" aria-label="Категория"><option value="">Все категории</option></select>
+        <i class="adm-filter-dot"></i>
+      </label>
+      <label class="adm-filter" title="Наличие">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+        <select id="filterStock" class="adm-select" aria-label="Наличие">
+          <option value="">Все</option><option value="1">В наличии</option><option value="0">Нет в наличии</option>
+        </select>
+        <i class="adm-filter-dot"></i>
+      </label>
+      <label class="adm-filter" title="Сортировка">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+        <select id="sortBy" class="adm-select" aria-label="Сортировка">
+          <option value="name">По названию</option><option value="category">По категории</option>
+          <option value="price">По цене</option><option value="updated">По изменению</option>
+        </select>
+        <i class="adm-filter-dot"></i>
+      </label>
+      <label class="adm-filter" title="Вид отображения">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        <select id="viewMode" class="adm-select" aria-label="Вид отображения">
+          <option value="cards">Вид: карточки</option>
+          <option value="list">Вид: список</option>
+          <option value="compact">Вид: компактно</option>
+        </select>
+        <i class="adm-filter-dot"></i>
+      </label>
+    </div>
     <button class="btn btn-primary" id="addBtn" type="button">+ Добавить товар</button>
   </div>
 
@@ -120,6 +139,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js?v=3"></script>
 <script src="assets/js/store.js?v=3"></script>
-<script src="assets/js/admin.js?v=3"></script>
+<script src="assets/js/admin.js?v=4"></script>
 </body>
 </html>
