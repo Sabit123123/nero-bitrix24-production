@@ -1,0 +1,6 @@
+# AquaUzel — https://aquauzel.kz
+User-agent: *
+Allow: /
+Disallow: /admin.html
+
+Sitemap: https://aquauzel.kz/sitemap.xml
