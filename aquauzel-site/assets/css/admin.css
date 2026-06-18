@@ -34,6 +34,8 @@ body.admin{min-height:100dvh}
 .adm-app{max-width:1180px;margin:0 auto;padding:0 18px 60px}
 .adm-top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;padding:12px 0;
   background:rgba(8,13,24,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.adm-brand{background:none;border:0;padding:0;cursor:pointer;display:inline-flex;align-items:center;line-height:0}
+.adm-brand img{pointer-events:none}
 .adm-title{font-weight:800;font-size:1.05rem}
 .adm-user{margin-left:auto;color:var(--muted);font-size:.85rem;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
@@ -73,6 +75,23 @@ body.admin{min-height:100dvh}
 .adm-check input{width:18px;height:18px;accent-color:var(--primary);cursor:pointer}
 .adm-actions{display:flex;gap:8px;margin-top:4px}
 .adm-actions .btn{flex:1}
+
+/* виды отображения товаров (переключаются селектом «Вид») */
+/* список — одна карточка в ряд на всю ширину (удобно редактировать по одному) */
+.adm-grid.view-list{grid-template-columns:1fr}
+/* компактно — более плотная сетка с уменьшёнными карточками (видно больше сразу) */
+.adm-grid.view-compact{grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.adm-grid.view-compact .adm-product{padding:11px;gap:11px}
+.adm-grid.view-compact .adm-photo{flex-basis:88px}
+.adm-grid.view-compact .adm-photo .adm-prev,
+.adm-grid.view-compact .adm-photo-ph,
+.adm-grid.view-compact .adm-photo-busy{width:88px;height:88px}
+.adm-grid.view-compact .adm-photo-actions,
+.adm-grid.view-compact .adm-photo-del{width:88px}
+.adm-grid.view-compact .adm-photo-btn span{display:none}      /* в компактном виде — только иконки */
+.adm-grid.view-compact .adm-photo-btn{padding:7px 4px}
+.adm-grid.view-compact .adm-fields{gap:7px}
+.adm-grid.view-compact .adm-actions .btn{font-size:.8rem;padding:8px 6px}
 
 /* тост */
 .adm-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);

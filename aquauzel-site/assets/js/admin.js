@@ -225,14 +225,18 @@
     $(".f-name", node).focus();
   }
 
-  /* ---------- пасхалка: на админке можно заменить картинку «Вовы» ---------- */
+  /* ---------- пасхалка: 20 кликов по логотипу компании в админке ----------
+     Логотип НЕ ведёт на сайт (это <button>), клики просто копятся; на 20-м
+     показывается «Вова». Картинку можно заменить, если успеть кликнуть по ней,
+     пока выглядывает — замена хранится только локально (у покупателей всегда
+     оригинал, см. app.js). */
   function initEgg() {
-    var trigger = $(".adm-title"), vova = document.getElementById("vova"),
+    var trigger = $(".adm-brand"), vova = document.getElementById("vova"),
         file = document.getElementById("vovaFile"), clicks = 0, busy = false;
     if (!trigger || !vova) return;
     function eggSrc() { try { return localStorage.getItem("aqua_egg_img") || vova.dataset.src; } catch (e) { return vova.dataset.src; } }
     trigger.title = "🙂";
-    trigger.addEventListener("click", function () { if (++clicks >= 20 && !busy) { clicks = 0; play(); } });
+    trigger.addEventListener("click", function (e) { e.preventDefault(); if (++clicks >= 20 && !busy) { clicks = 0; play(); } });
     vova.addEventListener("click", function () { if (vova.classList.contains("peek") && file) file.click(); });
     if (file) file.addEventListener("change", function (e) {
       var f = e.target.files[0]; e.target.value = "";
@@ -253,6 +257,16 @@
     }
   }
 
+  /* ---------- вид отображения: карточки / список / компактно ---------- */
+  var VIEW_KEY = "aqua_admin_view";
+  function getView() { try { return localStorage.getItem(VIEW_KEY) || "cards"; } catch (e) { return "cards"; } }
+  function applyView(v) {
+    v = (v === "list" || v === "compact") ? v : "cards";
+    var wrap = $("#products");
+    if (wrap) { wrap.classList.remove("view-cards", "view-list", "view-compact"); wrap.classList.add("view-" + v); }
+    try { localStorage.setItem(VIEW_KEY, v); } catch (e) {}
+  }
+
   /* ---------- старт ---------- */
   function start() {
     console.log("[admin] AQUA_SUPABASE найден:", !!window.AQUA_SUPABASE,
@@ -270,6 +284,9 @@
       if (n) n.addEventListener(id === "search" ? "input" : "change", render);
     });
     var add = $("#addBtn"); if (add) add.addEventListener("click", addBlank);
+    var vm = $("#viewMode");
+    if (vm) { vm.value = getView(); vm.addEventListener("change", function () { applyView(vm.value); }); }
+    applyView(getView());
     initEgg();
     show("login");
   }
