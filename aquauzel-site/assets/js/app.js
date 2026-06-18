@@ -5,6 +5,7 @@
   "use strict";
   var DATA = window.AQUA_PRICES || { categories: [], currency: "₸" };
   var CUR = DATA.currency || "₸";
+  var RAW_PRODUCTS = [];   // сырые товары из Supabase (нужны для фото в PDF-прайсе)
 
   /* ---- icon library (Lucide-style, stroke) ---- */
   var ICONS = {
@@ -376,34 +377,183 @@
     }
   }
 
-  /* ---- скачивание прайса: CSV из текущих данных (работает в обоих режимах) ---- */
-  function csvCell(v) { v = String(v == null ? "" : v); return /[";\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
-  function downloadPrice() {
-    var lines = [["Категория", "Наименование", "Характеристики", "Наличие", "Цена (" + CUR + ")"]];
-    DATA.categories.forEach(function (cat) {
-      cat.groups.forEach(function (g) {
-        var cols = g.columns;
-        var pis = cols.map(function (c, i) { return isPriceCol(c) ? i : -1; }).filter(function (i) { return i >= 0; });
-        var stockIdx = -1; cols.forEach(function (c, i) { if (/налич/i.test(c)) stockIdx = i; });
-        g.rows.forEach(function (r) {
-          var det = [];
-          cols.forEach(function (c, i) { if (i !== 0 && pis.indexOf(i) < 0 && i !== stockIdx && r[i]) det.push(c + ": " + r[i]); });
-          (pis.length ? pis : [-1]).forEach(function (pi) {
-            var label = pi >= 0 ? cols[pi] : "";
-            var suff = label.indexOf("·") >= 0 ? " [" + label.split("·")[0].trim() + "]" : "";
-            var name = (g.title ? g.title + " — " : "") + (r[0] || "") + suff;
-            lines.push([cat.name, name, det.join("; "),
-              stockIdx >= 0 ? (r[stockIdx] || "") : "", pi >= 0 ? (r[pi] || "") : ""]);
-          });
-        });
-      });
-    });
-    var csv = "﻿" + lines.map(function (row) { return row.map(csvCell).join(";"); }).join("\r\n");
-    var a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-    a.download = "AquaUzel-прайс.csv"; document.body.appendChild(a); a.click();
-    document.body.removeChild(a); setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  /* ===================================================================
+     Скачивание прайса в PDF.
+     Делаем это средствами самого браузера (печать → «Сохранить как PDF»):
+     без сторонних библиотек, корректная кириллица и любые фото (в т.ч. webp
+     и удалённые ссылки Supabase) — браузер рендерит их сам. Документ строится
+     по образцу фирменного прайса: сверху повторяющаяся «шапка» с логотипом,
+     адресом, телефоном и QR; ниже — данные по категориям с фото слева и
+     таблицей справа.
+     =================================================================== */
+  function absUrl(rel) { try { return new URL(rel, document.baseURI).href; } catch (e) { return rel; } }
+  function priceText(v) {
+    var s = String(v == null ? "" : v).replace(",", ".").trim();
+    if (s === "" || s === "-") return "—";
+    var n = Number(s);
+    if (!isFinite(n)) return esc(v);
+    return Math.round(n).toLocaleString("ru-RU").replace(/ /g, " ");
   }
+  // Карта «категория → фото» (берём первое товарное фото в категории — как в образце).
+  function imagesByCategory(products) {
+    var map = {};
+    (products || []).forEach(function (p) {
+      var c = p && p.category ? p.category : "";
+      if (c && p.image && !map[c]) map[c] = p.image;
+    });
+    return map;
+  }
+
+  function priceDocCss() {
+    return [
+      "@page{size:A4 portrait;margin:9mm}",
+      "*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}",
+      "html,body{margin:0;padding:0}",
+      "body{font-family:Arial,'Segoe UI',Roboto,'PT Sans',sans-serif;color:#0b1424;font-size:11px}",
+      ".page{width:100%;border-collapse:collapse}",
+      ".page>thead{display:table-header-group}.page>tfoot{display:table-footer-group}",
+      ".page>thead>tr>td,.page>tbody>tr>td,.page>tfoot>tr>td{padding:0}",
+      // шапка (повторяется на каждой странице через <thead>)
+      ".banner{display:flex;align-items:center;gap:10px;background:#0a0e1a;border-top:3px solid #2a9df4;border-bottom:3px solid #2a9df4;padding:8px 12px;margin-bottom:8px;color:#fff}",
+      ".bn-qr{display:flex;align-items:center;gap:6px;width:172px}",
+      ".bn-qr img{width:56px;height:56px;background:#fff;padding:3px;border-radius:6px}",
+      ".bn-qr span{font-size:10px;font-weight:700;color:#cfe0f5;line-height:1.15}",
+      ".bn-qr.right{justify-content:flex-end;text-align:right}",
+      ".bn-mid{flex:1;text-align:center}",
+      ".bn-logo{height:42px;object-fit:contain}",
+      ".bn-addr{font-weight:800;font-size:14px;margin-top:3px}",
+      ".bn-tel{font-size:12px;color:#dbe7fb;margin-top:1px}",
+      // категории
+      ".content{padding:0 1px}",
+      ".cat{margin:0 0 11px}",
+      ".cat-title{background:linear-gradient(180deg,#163a72,#1b4b8f);color:#fff;font-weight:800;font-size:13px;text-align:center;padding:5px 8px;border-radius:4px 4px 0 0;letter-spacing:.2px;break-after:avoid;page-break-after:avoid}",
+      ".cat-layout{width:100%;border-collapse:collapse}",
+      ".cat-img-cell{width:132px;vertical-align:top;padding:6px 8px 6px 0}",
+      ".cat-img-cell img{width:124px;height:124px;object-fit:cover;border:1px solid #cfe0f5;border-radius:8px;background:#fff}",
+      ".cat-data-cell{vertical-align:top}",
+      ".grp-title{background:#2f6fd0;color:#fff;font-weight:700;font-size:11px;padding:3px 8px;margin:6px 0 0;break-after:avoid;page-break-after:avoid}",
+      ".price{width:100%;border-collapse:collapse;margin-bottom:2px}",
+      ".price th{background:#1b4b8f;color:#fff;font-weight:700;font-size:10.5px;padding:4px 6px;border:1px solid #16407a;text-align:left}",
+      ".price th.thp{text-align:right}",
+      ".price td{padding:3px 6px;border:1px solid #cfe0f5;font-size:10.5px;vertical-align:top}",
+      ".price tr.alt td{background:#eaf2fd}",
+      ".price td.tdp{text-align:right;font-weight:800;color:#0a3d8f;white-space:nowrap}",
+      ".price tr{break-inside:avoid;page-break-inside:avoid}",
+      ".foot{text-align:center;color:#5b6b85;font-size:9px;padding:6px 4px 2px;border-top:1px solid #cfe0f5;margin-top:6px}",
+      ".empty{text-align:center;padding:48px;color:#5b6b85}"
+    ].join("");
+  }
+
+  function buildPriceHTML(products) {
+    var imgs = imagesByCategory(products || RAW_PRODUCTS);
+    var dateStr = new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" });
+
+    var banner =
+      '<div class="banner">' +
+        '<div class="bn-qr"><img src="' + absUrl("assets/img/qr-instagram.png") + '" alt=""><span>@aquauzel_02<br>Instagram</span></div>' +
+        '<div class="bn-mid">' +
+          '<img class="bn-logo" src="' + absUrl("assets/img/logo-full.png") + '" alt="AquaUzel">' +
+          '<div class="bn-addr">г. Алматы, ул. Амангельды, 70</div>' +
+          '<div class="bn-tel">тел: +7 700 520 12 01 · WhatsApp · Instagram</div>' +
+        '</div>' +
+        '<div class="bn-qr right"><img src="' + absUrl("assets/img/qr-whatsapp.png") + '" alt=""><span>WhatsApp<br>написать</span></div>' +
+      '</div>';
+
+    var body = "";
+    (DATA.categories || []).forEach(function (cat) {
+      var img = imgs[cat.name];
+      body += '<section class="cat"><div class="cat-title">' + esc(cat.name) + '</div>';
+      body += '<table class="cat-layout"><tr>';
+      if (img) body += '<td class="cat-img-cell"><img src="' + esc(img) + '" alt=""></td>';
+      body += '<td class="cat-data-cell">';
+      (cat.groups || []).forEach(function (g) {
+        var cols = g.columns || [];
+        if (g.title && g.title !== cat.name) body += '<div class="grp-title">' + esc(g.title) + '</div>';
+        // оставляем только непустые столбцы — таблица не «распухает» лишними колонками
+        var keep = cols.map(function (c, i) {
+          return (g.rows || []).some(function (r) { return r[i] != null && String(r[i]).trim() !== ""; }) ? i : -1;
+        }).filter(function (i) { return i >= 0; });
+        if (!keep.length) return;
+        body += '<table class="price"><thead><tr>';
+        keep.forEach(function (i) {
+          var label = cols[i], price = isPriceCol(label);
+          if (price && !/[₸]|тенге/i.test(label)) label = label + ", " + CUR;
+          body += '<th class="' + (price ? "thp" : "") + '">' + esc(label) + '</th>';
+        });
+        body += '</tr></thead><tbody>';
+        (g.rows || []).forEach(function (r, ri) {
+          body += '<tr' + (ri % 2 ? ' class="alt"' : '') + '>';
+          keep.forEach(function (i) {
+            var price = isPriceCol(cols[i]);
+            var val = price ? priceText(r[i]) : (r[i] == null ? "" : esc(r[i]));
+            body += '<td class="' + (price ? "tdp" : "") + '">' + val + '</td>';
+          });
+          body += '</tr>';
+        });
+        body += '</tbody></table>';
+      });
+      body += '</td></tr></table></section>';
+    });
+    if (!body) body = '<p class="empty">Прайс пока пуст.</p>';
+
+    return '<!doctype html><html lang="ru"><head><meta charset="utf-8">' +
+      '<base href="' + esc(document.baseURI) + '">' +
+      '<title>Прайс AquaUzel — ' + esc(dateStr) + '</title>' +
+      '<style>' + priceDocCss() + '</style></head><body>' +
+      '<table class="page">' +
+        '<thead><tr><td>' + banner + '</td></tr></thead>' +
+        '<tbody><tr><td><div class="content">' + body + '</div></td></tr></tbody>' +
+        '<tfoot><tr><td><div class="foot">AquaUzel · сантехника и инженерные системы · г. Алматы, ул. Амангельды, 70 · +7 700 520 12 01 · Прайс от ' +
+          esc(dateStr) + ' · цены в ' + esc(CUR) + ', указаны справочно и не являются публичной офертой</div></td></tr></tfoot>' +
+      '</table></body></html>';
+  }
+
+  function restoreDlBtn(btn) {
+    if (!btn) return;
+    btn.disabled = false; btn.classList.remove("is-busy");
+    var l = btn.querySelector(".dl-label"); if (l) l.textContent = "Скачать прайс (PDF)";
+  }
+
+  function downloadPricePDF(btn) {
+    var html = buildPriceHTML(RAW_PRODUCTS);
+    var iframe = document.createElement("iframe");
+    iframe.setAttribute("aria-hidden", "true");
+    iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
+    document.body.appendChild(iframe);
+
+    var removed = false;
+    function cleanup() { if (removed) return; removed = true; if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }
+
+    var win = iframe.contentWindow, doc = win.document;
+    doc.open(); doc.write(html); doc.close();
+
+    function go() {
+      restoreDlBtn(btn);
+      try {
+        win.focus();
+        if ("onafterprint" in win) win.onafterprint = function () { setTimeout(cleanup, 300); };
+        win.print();
+        setTimeout(cleanup, 60000);          // подстраховка, если afterprint не сработает
+      } catch (e) {
+        console.error("[price] не удалось открыть печать PDF:", e);
+        cleanup();
+        // запасной путь: открыть прайс в новой вкладке для ручной печати
+        try { var w = window.open("", "_blank"); if (w) { w.document.write(html); w.document.close(); } } catch (x) {}
+      }
+    }
+
+    // дождаться загрузки картинок (иначе в PDF будут пустые рамки)
+    var imgsEls = Array.prototype.slice.call(doc.images || []);
+    var pending = imgsEls.filter(function (im) { return !im.complete; });
+    if (!pending.length) { setTimeout(go, 80); return; }
+    var done = 0, fired = false;
+    function tick() { if (fired) return; if (++done >= pending.length) { fired = true; go(); } }
+    pending.forEach(function (im) { im.addEventListener("load", tick); im.addEventListener("error", tick); });
+    setTimeout(function () { if (!fired) { fired = true; go(); } }, 6000);  // не ждём вечно
+  }
+
+  // небольшой публичный хук — удобно для отладки/перегенерации прайса
+  window.AquaPricePDF = { html: buildPriceHTML, open: downloadPricePDF };
 
   /* ---- boot ---- */
   function renderPrice() { renderCatalog(); renderTabs(); renderCategory(0); initSearch(); }
@@ -411,12 +561,20 @@
     if (window.AquaStore && AquaStore.isConfigured()) {
       try {
         var products = await AquaStore.getProducts();
-        if (products && products.length) { DATA = AquaStore.toPriceData(products, CUR); window.AQUA_PRICES = DATA; }
+        if (products && products.length) {
+          RAW_PRODUCTS = products;                 // запоминаем фото для PDF-прайса
+          DATA = AquaStore.toPriceData(products, CUR); window.AQUA_PRICES = DATA;
+        }
       } catch (e) { /* откат на статический прайс */ }
     }
     renderPrice();
     var dl = document.getElementById("dlPrice");
-    if (dl) dl.addEventListener("click", downloadPrice);
+    if (dl) dl.addEventListener("click", function () {
+      if (dl.disabled) return;
+      dl.disabled = true; dl.classList.add("is-busy");
+      var l = dl.querySelector(".dl-label"); if (l) l.textContent = "Готовим PDF…";
+      setTimeout(function () { downloadPricePDF(dl); }, 30);   // дать кнопке перерисоваться
+    });
     initEffects();
   }
   document.addEventListener("DOMContentLoaded", function () {
