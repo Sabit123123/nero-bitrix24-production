@@ -514,46 +514,59 @@
     var l = btn.querySelector(".dl-label"); if (l) l.textContent = "Скачать прайс (PDF)";
   }
 
-  function downloadPricePDF(btn) {
+  function downloadPricePDF(w, btn) {
+    // Прайс печатаем в ОТДЕЛЬНОЙ вкладке (в ней только прайс). Важно для телефона:
+    // на Android печать из скрытого iframe выводит весь сайт целиком, а отдельная
+    // вкладка печатается как надо. Окно открыто синхронно в обработчике клика.
     var html = buildPriceHTML(RAW_PRODUCTS);
+    if (!w) { printPriceViaIframe(html, btn); return; }     // попап заблокирован → запасной путь
+    try { w.document.open(); w.document.write(html); w.document.close(); }
+    catch (e) { restoreDlBtn(btn); printPriceViaIframe(html, btn); return; }
+    restoreDlBtn(btn);
+    try { w.onafterprint = function () { try { w.close(); } catch (x) {} }; } catch (e) {}
+    var imgs = Array.prototype.slice.call(w.document.images || []);
+    var pending = imgs.filter(function (im) { return !im.complete; });
+    var fired = false;
+    function go() { if (fired) return; fired = true; try { w.focus(); w.print(); } catch (e) {} }
+    if (!pending.length) { setTimeout(go, 350); return; }   // дать вкладке отрисоваться
+    var done = 0;
+    pending.forEach(function (im) {
+      im.addEventListener("load", function () { if (++done >= pending.length) go(); });
+      im.addEventListener("error", function () { if (++done >= pending.length) go(); });
+    });
+    setTimeout(go, 6000);                                    // не ждём картинки вечно
+  }
+
+  // Запасной путь (десктоп или заблокированный попап): печать через скрытый iframe.
+  function printPriceViaIframe(html, btn) {
     var iframe = document.createElement("iframe");
     iframe.setAttribute("aria-hidden", "true");
     iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
     document.body.appendChild(iframe);
-
     var removed = false;
     function cleanup() { if (removed) return; removed = true; if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }
-
     var win = iframe.contentWindow, doc = win.document;
     doc.open(); doc.write(html); doc.close();
-
     function go() {
       restoreDlBtn(btn);
       try {
         win.focus();
         if ("onafterprint" in win) win.onafterprint = function () { setTimeout(cleanup, 300); };
         win.print();
-        setTimeout(cleanup, 60000);          // подстраховка, если afterprint не сработает
-      } catch (e) {
-        console.error("[price] не удалось открыть печать PDF:", e);
-        cleanup();
-        // запасной путь: открыть прайс в новой вкладке для ручной печати
-        try { var w = window.open("", "_blank"); if (w) { w.document.write(html); w.document.close(); } } catch (x) {}
-      }
+        setTimeout(cleanup, 60000);
+      } catch (e) { console.error("[price] печать не удалась:", e); cleanup(); }
     }
-
-    // дождаться загрузки картинок (иначе в PDF будут пустые рамки)
     var imgsEls = Array.prototype.slice.call(doc.images || []);
     var pending = imgsEls.filter(function (im) { return !im.complete; });
     if (!pending.length) { setTimeout(go, 80); return; }
     var done = 0, fired = false;
     function tick() { if (fired) return; if (++done >= pending.length) { fired = true; go(); } }
     pending.forEach(function (im) { im.addEventListener("load", tick); im.addEventListener("error", tick); });
-    setTimeout(function () { if (!fired) { fired = true; go(); } }, 6000);  // не ждём вечно
+    setTimeout(function () { if (!fired) { fired = true; go(); } }, 6000);
   }
 
   // небольшой публичный хук — удобно для отладки/перегенерации прайса
-  window.AquaPricePDF = { html: buildPriceHTML, open: downloadPricePDF };
+  window.AquaPricePDF = { html: buildPriceHTML };
 
   /* ---- boot ---- */
   function renderPrice() { renderCatalog(); renderTabs(); renderCategory(0); initSearch(); }
@@ -572,9 +585,12 @@
     var dl = document.getElementById("dlPrice");
     if (dl) dl.addEventListener("click", function () {
       if (dl.disabled) return;
+      // окно открываем СИНХРОННО в обработчике клика, иначе мобильный браузер
+      // заблокирует попап. Дальше заполняем его и печатаем.
+      var w = window.open("", "_blank");
       dl.disabled = true; dl.classList.add("is-busy");
       var l = dl.querySelector(".dl-label"); if (l) l.textContent = "Готовим PDF…";
-      setTimeout(function () { downloadPricePDF(dl); }, 30);   // дать кнопке перерисоваться
+      downloadPricePDF(w, dl);
     });
     initEffects();
   }

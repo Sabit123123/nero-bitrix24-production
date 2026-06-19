@@ -1,5 +1,10 @@
-# Graphify: храним граф (graph.json / отчёт / визуализацию), но не временный AST-кэш
+# Graphify: храним только граф и отчёт (graph.json, GRAPH_REPORT.md).
+# Визуализацию, состояние и кэш не коммитим — регенерируются `graphify update .`
 graphify-out/cache/
+graphify-out/graph.html
+graphify-out/manifest.json
+graphify-out/.graphify_labels.json
+graphify-out/.graphify_root
 
 # OS / редакторы
 .DS_Store
