@@ -591,12 +591,20 @@
     var dl = document.getElementById("dlPrice");
     if (dl) dl.addEventListener("click", function () {
       if (dl.disabled) return;
-      // окно открываем СИНХРОННО в обработчике клика, иначе мобильный браузер
-      // заблокирует попап. Дальше заполняем его и печатаем.
-      var w = window.open("", "_blank");
       dl.disabled = true; dl.classList.add("is-busy");
       var l = dl.querySelector(".dl-label"); if (l) l.textContent = "Готовим PDF…";
-      downloadPricePDF(w, dl);
+      // Основной путь — скачивание готового .pdf (jsPDF). Если не вышло — печать.
+      if (window.AquaPdf && window.AquaPdf.download) {
+        window.AquaPdf.download({ categories: (DATA && DATA.categories) || [], currency: CUR })
+          .then(function () { restoreDlBtn(dl); })
+          .catch(function (e) {
+            console.error("[price] не удалось скачать PDF, открываю печать:", e);
+            restoreDlBtn(dl);
+            downloadPricePDF(window.open("", "_blank"), dl);
+          });
+      } else {
+        downloadPricePDF(window.open("", "_blank"), dl);
+      }
     });
     initEffects();
   }
