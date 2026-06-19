@@ -1,7 +1,7 @@
 # Graph Report - nero-bitrix24-production  (2026-06-19)
 
 ## Corpus Check
-- 25 files · ~115,210 words
+- 25 files · ~115,299 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `43723888`
+- Built from commit: `03b40330`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 

@@ -45,13 +45,15 @@
       byCat[cat].push(p);
     });
     var categories = order.map(function (cat, i) {
-      var rows = byCat[cat].map(function (p) {
-        return [
+      var rows = [], images = [];
+      byCat[cat].forEach(function (p) {
+        rows.push([
           p.name || "",
           p.pack_quantity || "",
           p.characteristics || "",
           (p.price === 0 || p.price) ? String(p.price) : ""
-        ];
+        ]);
+        images.push(p.image || "");           // фото товара (для прайса и PDF)
       });
       return {
         id: slug(cat) + "-" + i,
@@ -62,7 +64,8 @@
         groups: [{
           title: cat,
           columns: ["Наименование", "Упаковка", "Характеристики", "Цена"],
-          rows: rows
+          rows: rows,
+          images: images
         }]
       };
     });

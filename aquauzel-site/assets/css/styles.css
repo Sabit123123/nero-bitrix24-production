@@ -511,3 +511,9 @@ body.admin .vova-egg.peek{pointer-events:auto;cursor:pointer}
 .faq-item summary:hover{color:var(--primary-2)}
 .faq-a{padding:0 20px 18px;color:var(--text-dim);line-height:1.62}
 .faq-a p{margin:0}
+
+/* ---------- фото товара в прайсе ---------- */
+.col-name .pn-wrap{display:flex;align-items:center;gap:9px}
+.price-thumb{width:42px;height:42px;flex:0 0 42px;object-fit:cover;border-radius:7px;
+  border:1px solid var(--border);background:var(--surface-2)}
+@media (max-width:560px){ .price-thumb{width:36px;height:36px;flex-basis:36px} }
