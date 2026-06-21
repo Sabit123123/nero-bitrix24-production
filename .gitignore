@@ -1,6 +1,9 @@
 # Graphify: храним граф (graph.json / отчёт / визуализацию), но не временный AST-кэш
 graphify-out/cache/
 
+# Claude agent worktrees (internal tooling)
+.claude/worktrees/
+
 # OS / редакторы
 .DS_Store
 Thumbs.db
