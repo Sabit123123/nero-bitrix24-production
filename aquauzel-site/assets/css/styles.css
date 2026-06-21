@@ -393,7 +393,7 @@ mark{background:rgba(42,157,244,.32);color:#fff;border-radius:4px;padding:0 2px}
 }
 @media (max-width:860px){
   .nav{display:none}
-  .burger{display:none}
+  .burger{display:flex}
   .phone-link span{display:none}
   .phone-link{padding:11px}
   .hero-grid{grid-template-columns:1fr;text-align:center}
