@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold: #C9A227;
+  --color-gold-2: #E8C84A;
+}
+
+:root {
+  --gold: #C9A227;
+  --gold2: #E8C84A;
+  --bg: #050507;
+  --surface: rgba(5, 5, 7, 0.88);
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; background: #050507; }
+body { font-family: 'Inter', -apple-system, sans-serif; color: #F5F0E8; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(201, 162, 39, 0.3); border-radius: 2px; }
+
+.btn-gold {
+  background-color: #ca8a04;
+  color: #000;
+  font-weight: 700;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
+}
+.btn-gold:hover { background-color: #facc15; }
+
+.btn-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 700;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s;
+}
+.btn-ghost:hover {
+  border-color: rgba(234, 179, 8, 0.6);
+  color: #facc15;
+}
+.btn-ghost.active {
+  border-color: rgba(234, 179, 8, 0.6);
+  color: #facc15;
+  background-color: rgba(234, 179, 8, 0.08);
+}
+
+.panel-section { margin-bottom: 1rem; }
+.panel-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
