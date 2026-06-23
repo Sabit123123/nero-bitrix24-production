@@ -17,6 +17,7 @@ interface EquipmentProps {
   hazeActive: boolean;
   onSelect: () => void;
   onMove: (pos: [number, number, number]) => void;
+  onDragStart: () => void;
 }
 
 // ─── Truss geometry ─────────────────────────────────────────────────────────
@@ -118,7 +119,7 @@ function TrussBody({ w, d, h, color }: { w: number; d: number; h: number; color:
 }
 
 // ─── Main Equipment component ────────────────────────────────────────────────
-export function Equipment({ obj, selected, showBeams, showCoverage, hazeActive, onSelect }: EquipmentProps) {
+export function Equipment({ obj, selected, showBeams, showCoverage, hazeActive, onSelect, onDragStart }: EquipmentProps) {
   const meshRef = useRef<THREE.Group>(null);
   const item = EQUIPMENT.find(e => e.id === obj.itemId);
   if (!item) return null;
@@ -133,6 +134,7 @@ export function Equipment({ obj, selected, showBeams, showCoverage, hazeActive, 
       rotation={obj.rotation as [number, number, number]}
       scale={[obj.scale, obj.scale, obj.scale]}
       onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onSelect(); }}
+      onPointerDown={(e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); onDragStart(); }}
     >
       {/* ── Body ── */}
       {isTruss ? (

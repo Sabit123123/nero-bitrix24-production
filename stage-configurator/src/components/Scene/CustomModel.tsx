@@ -14,9 +14,10 @@ interface CustomModelProps {
   selected: boolean;
   label: string;
   onClick: () => void;
+  onDragStart?: () => void;
 }
 
-export function CustomModel({ glbUrl, position, rotation, scale, selected, label, onClick }: CustomModelProps) {
+export function CustomModel({ glbUrl, position, rotation, scale, selected, label, onClick, onDragStart }: CustomModelProps) {
   const groupRef = useRef<THREE.Group>(null);
 
   useEffect(() => {
@@ -72,6 +73,7 @@ export function CustomModel({ glbUrl, position, rotation, scale, selected, label
       rotation={rotation}
       scale={[scale, scale, scale]}
       onClick={(e) => { e.stopPropagation(); onClick(); }}
+      onPointerDown={(e) => { e.stopPropagation(); onDragStart?.(); }}
     >
       {selected && (
         <mesh>

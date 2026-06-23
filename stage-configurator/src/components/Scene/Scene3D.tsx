@@ -1,7 +1,8 @@
 'use client';
 import { Suspense, useRef, useCallback } from 'react';
 import { Canvas, ThreeEvent } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, OrthographicCamera, ContactShadows } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, OrthographicCamera, ContactShadows, Grid } from '@react-three/drei';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import * as THREE from 'three';
 import { useConfiguratorStore } from '@/store/configurator-store';
 import { EQUIPMENT } from '@/lib/equipment-catalog';
@@ -9,43 +10,50 @@ import { Equipment } from './Equipment';
 import { LEDScreen } from './LEDScreen';
 import { FloorGrid } from './FloorGrid';
 import { CustomModel } from './CustomModel';
+import { TrussObject } from './TrussObject';
+
+// ─── Room geometry ─────────────────────────────────────────────────────────
 
 function Room() {
   const { roomW, roomD, wallH } = useConfiguratorStore();
 
   return (
     <group>
-      {/* Floor */}
+      {/* Checker floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[roomW, roomD]} />
         <meshStandardMaterial color="#c4a882" roughness={0.9} />
       </mesh>
+
       {/* Walls */}
       {[
-        { pos: [0, wallH / 2, -roomD / 2] as [number, number, number], rot: [0, 0, 0] as [number, number, number], size: [roomW, wallH] as [number, number] },
-        { pos: [0, wallH / 2, roomD / 2] as [number, number, number], rot: [0, Math.PI, 0] as [number, number, number], size: [roomW, wallH] as [number, number] },
-        { pos: [-roomW / 2, wallH / 2, 0] as [number, number, number], rot: [0, Math.PI / 2, 0] as [number, number, number], size: [roomD, wallH] as [number, number] },
-        { pos: [roomW / 2, wallH / 2, 0] as [number, number, number], rot: [0, -Math.PI / 2, 0] as [number, number, number], size: [roomD, wallH] as [number, number] },
+        { pos: [0, wallH / 2, -roomD / 2] as [number,number,number], rot: [0,0,0] as [number,number,number], size: [roomW, wallH] as [number,number] },
+        { pos: [0, wallH / 2,  roomD / 2] as [number,number,number], rot: [0,Math.PI,0] as [number,number,number], size: [roomW, wallH] as [number,number] },
+        { pos: [-roomW/2, wallH/2, 0]      as [number,number,number], rot: [0,Math.PI/2,0]  as [number,number,number], size: [roomD, wallH] as [number,number] },
+        { pos: [ roomW/2, wallH/2, 0]      as [number,number,number], rot: [0,-Math.PI/2,0] as [number,number,number], size: [roomD, wallH] as [number,number] },
       ].map((w, i) => (
         <mesh key={i} position={w.pos} rotation={w.rot} receiveShadow>
           <planeGeometry args={w.size} />
           <meshStandardMaterial color="#909088" roughness={0.95} side={THREE.FrontSide} />
         </mesh>
       ))}
-      {/* Ceiling */}
+
+      {/* Ceiling — subtle */}
       <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, wallH, 0]}>
         <planeGeometry args={[roomW, roomD]} />
-        <meshStandardMaterial color="#e0e0d8" transparent opacity={0.15} />
+        <meshStandardMaterial color="#e0e0d8" transparent opacity={0.12} />
       </mesh>
     </group>
   );
 }
 
+// ─── Main Scene ────────────────────────────────────────────────────────────
+
 export function Scene3D() {
   const {
     objects, selectedId, selectObject, updateObject,
     showGrid, showBeams, showCoverage,
-    cameraMode,
+    cameraMode, snapEnabled,
   } = useConfiguratorStore();
 
   const hazeActive = objects.some(o => {
@@ -53,15 +61,44 @@ export function Scene3D() {
     return item?.fogMaker;
   });
 
-  const floorRef = useRef<THREE.Mesh>(null);
+  // ── Drag state ────────────────────────────────────────────────────────
+  const dragRef = useRef<{ uuid: string; yOff: number } | null>(null);
+  const orbitRef = useRef<OrbitControlsImpl>(null);
+
+  const startDrag = useCallback((uuid: string, yOff: number) => {
+    dragRef.current = { uuid, yOff };
+    if (orbitRef.current) orbitRef.current.enabled = false;
+  }, []);
+
+  const endDrag = useCallback(() => {
+    dragRef.current = null;
+    if (orbitRef.current) orbitRef.current.enabled = true;
+  }, []);
+
+  const handleFloorMove = useCallback((e: ThreeEvent<PointerEvent>) => {
+    if (!dragRef.current) return;
+    e.stopPropagation();
+    let x = e.point.x;
+    let z = e.point.z;
+    if (snapEnabled) {
+      x = Math.round(x * 2) / 2; // snap to 0.5 m grid
+      z = Math.round(z * 2) / 2;
+    }
+    updateObject(dragRef.current.uuid, { position: [x, dragRef.current.yOff, z] });
+  }, [snapEnabled, updateObject]);
 
   const handleFloorClick = useCallback((e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     selectObject(null);
   }, [selectObject]);
 
+  // Shared drag start handler for Equipment/CustomModel
+  const makeDragStart = useCallback((uuid: string, yOff: number) => () => {
+    startDrag(uuid, yOff);
+  }, [startDrag]);
+
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full" onPointerUp={endDrag}>
       <Canvas
         shadows
         gl={{ preserveDrawingBuffer: true, antialias: true }}
@@ -70,12 +107,7 @@ export function Scene3D() {
         {/* Lighting */}
         <ambientLight intensity={1.5} color="#ffffff" />
         <hemisphereLight args={['#ffffff', '#e8e8e0', 0.6]} />
-        <directionalLight
-          position={[10, 15, 10]}
-          intensity={1.5}
-          castShadow
-          shadow-mapSize={[2048, 2048]}
-        />
+        <directionalLight position={[10, 15, 10]} intensity={1.5} castShadow shadow-mapSize={[2048, 2048]} />
 
         {/* Fog when hazer active */}
         {hazeActive && <fog attach="fog" args={['#1a1a2e', 15, 40]} />}
@@ -87,6 +119,7 @@ export function Scene3D() {
           <OrthographicCamera makeDefault position={[0, 20, 0]} zoom={30} />
         )}
         <OrbitControls
+          ref={orbitRef}
           makeDefault
           enablePan
           enableZoom
@@ -97,25 +130,23 @@ export function Scene3D() {
           maxDistance={60}
         />
 
-        {/* Scene */}
         <Suspense fallback={null}>
           <Room />
 
-          {/* Grid */}
           {showGrid && <FloorGrid />}
 
-          {/* Floor click target */}
+          {/* Invisible floor plane — receives drag pointer moves + deselect clicks */}
           <mesh
-            ref={floorRef}
             rotation={[-Math.PI / 2, 0, 0]}
             position={[0, 0.001, 0]}
             onClick={handleFloorClick}
+            onPointerMove={handleFloorMove}
           >
-            <planeGeometry args={[100, 100]} />
+            <planeGeometry args={[200, 200]} />
             <meshBasicMaterial transparent opacity={0} />
           </mesh>
 
-          {/* Objects */}
+          {/* ── Objects ── */}
           {objects.map(obj => {
             if (obj.isCustom && obj.customModelUrl) {
               return (
@@ -123,26 +154,42 @@ export function Scene3D() {
                   key={obj.uuid}
                   glbUrl={obj.customModelUrl}
                   position={obj.position}
-                  rotation={obj.rotation as [number, number, number]}
+                  rotation={obj.rotation as [number,number,number]}
                   scale={obj.scale}
                   selected={selectedId === obj.uuid}
                   label={obj.name}
                   onClick={() => selectObject(obj.uuid)}
+                  onDragStart={makeDragStart(obj.uuid, obj.position[1])}
                 />
               );
             }
+
+            if (obj.isTruss && obj.trussConfig) {
+              return (
+                <TrussObject
+                  key={obj.uuid}
+                  obj={obj}
+                  config={obj.trussConfig}
+                  selected={selectedId === obj.uuid}
+                  onSelect={() => selectObject(obj.uuid)}
+                  onDragStart={startDrag}
+                />
+              );
+            }
+
             if (obj.isLED && obj.ledConfig) {
               return (
                 <LEDScreen
                   key={obj.uuid}
                   config={obj.ledConfig}
                   position={obj.position}
-                  rotation={obj.rotation as [number, number, number]}
+                  rotation={obj.rotation as [number,number,number]}
                   selected={selectedId === obj.uuid}
                   onClick={() => selectObject(obj.uuid)}
                 />
               );
             }
+
             return (
               <Equipment
                 key={obj.uuid}
@@ -153,18 +200,12 @@ export function Scene3D() {
                 hazeActive={hazeActive}
                 onSelect={() => selectObject(obj.uuid)}
                 onMove={(pos) => updateObject(obj.uuid, { position: pos })}
+                onDragStart={makeDragStart(obj.uuid, obj.position[1])}
               />
             );
           })}
 
-          <ContactShadows
-            position={[0, 0, 0]}
-            opacity={0.4}
-            scale={50}
-            blur={1.5}
-            far={10}
-            color="#000000"
-          />
+          <ContactShadows position={[0, 0, 0]} opacity={0.4} scale={50} blur={1.5} far={10} color="#000000" />
         </Suspense>
       </Canvas>
     </div>
