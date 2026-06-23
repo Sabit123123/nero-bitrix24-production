@@ -1,7 +1,7 @@
 'use client';
-import { Suspense, useRef, useCallback } from 'react';
-import { Canvas, ThreeEvent } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, OrthographicCamera, ContactShadows, Grid } from '@react-three/drei';
+import { Suspense, useRef, useCallback, useEffect, type RefObject } from 'react';
+import { Canvas, ThreeEvent, useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls, PerspectiveCamera, OrthographicCamera, ContactShadows } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import * as THREE from 'three';
 import { useConfiguratorStore } from '@/store/configurator-store';
@@ -11,6 +11,53 @@ import { LEDScreen } from './LEDScreen';
 import { FloorGrid } from './FloorGrid';
 import { CustomModel } from './CustomModel';
 import { TrussObject } from './TrussObject';
+
+// ─── WASD camera pan ───────────────────────────────────────────────────────
+
+function WASDControls({ orbitRef }: { orbitRef: RefObject<OrbitControlsImpl> }) {
+  const keys = useRef<Record<string, boolean>>({});
+  const { camera } = useThree();
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      // Don't capture WASD when user is typing in an input
+      const tag = (document.activeElement as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      keys.current[e.code] = true;
+    };
+    const up = (e: KeyboardEvent) => { keys.current[e.code] = false; };
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
+  }, []);
+
+  useFrame((_, delta) => {
+    const ctrl = orbitRef.current;
+    if (!ctrl) return;
+    const k = keys.current;
+    if (!k['KeyW'] && !k['KeyS'] && !k['KeyA'] && !k['KeyD']) return;
+
+    const speed = 8 * delta;
+    const fwd = new THREE.Vector3();
+    camera.getWorldDirection(fwd);
+    fwd.y = 0;
+    if (fwd.lengthSq() < 0.001) return;
+    fwd.normalize();
+    const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0));
+
+    const pan = new THREE.Vector3();
+    if (k['KeyW']) pan.addScaledVector(fwd, speed);
+    if (k['KeyS']) pan.addScaledVector(fwd, -speed);
+    if (k['KeyA']) pan.addScaledVector(right, -speed);
+    if (k['KeyD']) pan.addScaledVector(right, speed);
+
+    camera.position.add(pan);
+    ctrl.target.add(pan);
+    ctrl.update();
+  });
+
+  return null;
+}
 
 // ─── Room geometry ─────────────────────────────────────────────────────────
 
@@ -117,7 +164,7 @@ export function Scene3D() {
   }, [startDrag]);
 
   return (
-    <div className="w-full h-full" onPointerUp={endDrag}>
+    <div className="w-full h-full relative" onPointerUp={endDrag}>
       <Canvas
         shadows
         gl={{ preserveDrawingBuffer: true, antialias: true }}
@@ -149,6 +196,7 @@ export function Scene3D() {
           minDistance={3}
           maxDistance={60}
         />
+        <WASDControls orbitRef={orbitRef} />
 
         <Suspense fallback={null}>
           <Room />
@@ -228,6 +276,33 @@ export function Scene3D() {
           <ContactShadows position={[0, 0, 0]} opacity={0.4} scale={50} blur={1.5} far={10} color="#000000" />
         </Suspense>
       </Canvas>
+
+      {/* Keyboard hints */}
+      <div style={{
+        position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
+        display: 'flex', gap: 6, pointerEvents: 'none', zIndex: 10,
+      }}>
+        {[
+          ['WASD', 'Камера'],
+          ['ЛКМ+перетащить', 'Переместить объект'],
+          ['Del', 'Удалить'],
+          ['Ctrl+Z', 'Отменить'],
+          ['Ctrl+D', 'Дублировать'],
+        ].map(([key, label]) => (
+          <div key={key} style={{
+            background: 'rgba(5,5,10,0.85)',
+            border: '1px solid rgba(201,162,39,0.25)',
+            borderRadius: 4,
+            padding: '2px 7px',
+            fontSize: 10,
+            color: '#888',
+            backdropFilter: 'blur(6px)',
+          }}>
+            <span style={{ color: '#C9A227', fontWeight: 600 }}>{key}</span>
+            {' '}{label}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

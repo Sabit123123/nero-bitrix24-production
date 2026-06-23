@@ -6,6 +6,9 @@ graphify-out/manifest.json
 graphify-out/.graphify_labels.json
 graphify-out/.graphify_root
 
+# Claude agent worktrees (internal tooling)
+.claude/worktrees/
+
 # OS / редакторы
 .DS_Store
 Thumbs.db
