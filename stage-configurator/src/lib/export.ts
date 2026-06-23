@@ -99,6 +99,23 @@ export function exportProjectPDF(project: Project, objects: PlacedObject[]) {
     ];
   }).join('');
 
+  // Per-object notes block
+  const annotated = objects.filter(o => o.note?.trim());
+  const notesBlock = annotated.length ? `
+<div style="margin-top:22px">
+  <table>
+    <thead>
+      <tr>
+        <th>Позиция</th>
+        <th>Заметка</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${annotated.map(o => `<tr><td style="width:35%">${o.name}</td><td style="color:#555">${o.note}</td></tr>`).join('')}
+    </tbody>
+  </table>
+</div>` : '';
+
   const printWin = window.open('', '_blank');
   if (!printWin) return;
 
@@ -169,6 +186,8 @@ ${imgData ? `<img class="scene-img" src="${imgData}" alt="3D план" />` : ''}
 </table>
 
 ${project.notes ? `<div style="margin-top:18px;padding:12px;background:#fffef5;border:1px solid #e8d89a;border-radius:6px;font-size:12px"><b>Примечания:</b><br/>${project.notes}</div>` : ''}
+
+${notesBlock}
 
 <div class="footer">
   Создано в New Direction Stage Configurator &nbsp;·&nbsp; ${new Date().toLocaleDateString('ru-RU')}

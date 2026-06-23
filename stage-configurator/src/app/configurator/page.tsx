@@ -8,6 +8,7 @@ import { LEDConstructor } from '@/components/UI/LEDConstructor';
 import { TrussConstructor } from '@/components/UI/TrussConstructor';
 import { TemplatesModal } from '@/components/Modals/TemplatesModal';
 import { OpenProjectModal } from '@/components/Modals/OpenProjectModal';
+import { ProjectInfoModal } from '@/components/Modals/ProjectInfoModal';
 import { ModelImporter } from '@/components/UI/ModelImporter';
 import { useConfiguratorStore } from '@/store/configurator-store';
 import { EQUIPMENT } from '@/lib/equipment-catalog';
@@ -29,6 +30,7 @@ export default function ConfiguratorPage() {
   const [showTruss, setShowTruss] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showOpen, setShowOpen] = useState(false);
+  const [showProjectInfo, setShowProjectInfo] = useState(false);
   const [showImporter, setShowImporter] = useState(false);
   const [droppedFile, setDroppedFile] = useState<File | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -131,6 +133,7 @@ export default function ConfiguratorPage() {
         onSave={handleSave}
         onNew={handleNew}
         onOpen={() => setShowOpen(true)}
+        onProjectInfo={() => setShowProjectInfo(true)}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -187,6 +190,7 @@ export default function ConfiguratorPage() {
       {showTruss   && <TrussConstructor  onClose={() => setShowTruss(false)} />}
       {showTemplates && <TemplatesModal  onClose={() => setShowTemplates(false)} />}
       {showOpen    && <OpenProjectModal  onClose={() => setShowOpen(false)} />}
+      {showProjectInfo && <ProjectInfoModal onClose={() => setShowProjectInfo(false)} />}
     </div>
   );
 }

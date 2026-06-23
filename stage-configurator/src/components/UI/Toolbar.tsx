@@ -10,9 +10,10 @@ interface ToolbarProps {
   onSave: () => void;
   onNew: () => void;
   onOpen: () => void;
+  onProjectInfo: () => void;
 }
 
-export function Toolbar({ onExportPNG, onExportPDF, onOpenTemplates, onImportModel, onSave, onNew, onOpen }: ToolbarProps) {
+export function Toolbar({ onExportPNG, onExportPDF, onOpenTemplates, onImportModel, onSave, onNew, onOpen, onProjectInfo }: ToolbarProps) {
   const {
     project, setProjectMeta,
     roomW, roomD, wallH, setRoom,
@@ -49,6 +50,7 @@ export function Toolbar({ onExportPNG, onExportPDF, onOpenTemplates, onImportMod
       <button onClick={onSave} className="btn-ghost">Сохранить</button>
       <button onClick={onOpen} className="btn-ghost">Открыть</button>
       <button onClick={onOpenTemplates} className="btn-ghost">Шаблоны ▾</button>
+      <button onClick={onProjectInfo} className="btn-ghost" title="Клиент, площадка, дата, примечания">Проект ✏️</button>
 
       <div className="w-px h-5 bg-white/10" />
 

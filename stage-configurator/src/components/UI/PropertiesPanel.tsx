@@ -86,10 +86,14 @@ export function PropertiesPanel() {
 
         {/* Header */}
         <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/8">
-          <span className="text-xl">{item?.emoji ?? '📦'}</span>
-          <div className="min-w-0">
-            <div className="text-sm font-bold text-white truncate">{obj.name}</div>
-            <div className="text-xs text-white/30">{item?.brand ?? (obj.isCustom ? '3D модель' : '')}</div>
+          <span className="text-xl flex-shrink-0">{item?.emoji ?? '📦'}</span>
+          <div className="min-w-0 flex-1">
+            <input
+              value={obj.name}
+              onChange={e => updateObject(obj.uuid, { name: e.target.value })}
+              className="bg-transparent text-sm font-bold text-white outline-none w-full hover:bg-white/6 focus:bg-white/6 rounded px-1 -mx-1"
+            />
+            <div className="text-xs text-white/30 px-1">{item?.brand ?? (obj.isCustom ? '3D модель' : '')}</div>
           </div>
         </div>
 
@@ -160,6 +164,18 @@ export function PropertiesPanel() {
             />
             <span className="text-xs text-white/60">Видимость</span>
           </label>
+        </div>
+
+        {/* Notes */}
+        <div className="panel-section">
+          <div className="panel-label">Заметка</div>
+          <textarea
+            value={obj.note ?? ''}
+            onChange={e => updateObject(obj.uuid, { note: e.target.value })}
+            placeholder="Комментарий для райдера..."
+            rows={2}
+            className="w-full bg-white/6 border border-white/10 rounded px-2 py-1.5 text-xs text-white outline-none focus:border-yellow-500/40 resize-none placeholder:text-white/20"
+          />
         </div>
 
         {/* Actions */}

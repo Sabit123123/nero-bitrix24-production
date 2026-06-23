@@ -35,6 +35,8 @@ export interface PlacedObject {
   // Custom imported model (SKP/GLB/etc.)
   isCustom?: boolean;
   customModelUrl?: string;
+  // User annotation
+  note?: string;
 }
 
 export interface LEDConfig {
