@@ -30,7 +30,7 @@ interface ConfiguratorStore {
   // Custom imported models
   customModels: CustomEquipment[];
   addCustomModel: (item: CustomEquipment) => void;
-  addObjectCustom: (itemId: string, name: string, modelUrl: string, equipment?: import('@/lib/equipment-storage').CustomEquipment) => void;
+  addObjectCustom: (itemId: string, name: string, modelUrl: string, equipment?: CustomEquipment) => void;
 
   // Project
   project: Project;

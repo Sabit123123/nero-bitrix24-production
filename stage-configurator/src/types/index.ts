@@ -18,6 +18,12 @@ export interface EquipmentItem {
   coverageRadius?: number;
 }
 
+export interface CustomEquipment extends EquipmentItem {
+  modelUrl: string;
+  previewUrl?: string;
+  isCustom: true;
+}
+
 export interface PlacedObject {
   uuid: string;
   itemId: string;
@@ -35,7 +41,7 @@ export interface PlacedObject {
   // Custom imported model (SKP/GLB/etc.)
   isCustom?: boolean;
   customModelUrl?: string;
-  customEquipment?: import('@/lib/equipment-storage').CustomEquipment;
+  customEquipment?: CustomEquipment;
   // User annotation
   note?: string;
 }

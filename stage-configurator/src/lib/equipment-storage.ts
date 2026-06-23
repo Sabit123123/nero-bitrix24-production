@@ -1,12 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
-import { EquipmentItem } from '@/types';
+import { CustomEquipment } from '@/types';
 
-export interface CustomEquipment extends Omit<EquipmentItem, 'color'> {
-  color: string;
-  modelUrl: string;
-  previewUrl?: string;
-  isCustom: true;
-}
+export type { CustomEquipment };
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
