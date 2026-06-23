@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Toolbar } from '@/components/UI/Toolbar';
 import { EquipmentLibrary } from '@/components/UI/EquipmentLibrary';
@@ -64,6 +64,34 @@ export default function ConfiguratorPage() {
     exportProjectPDF(project, objects);
     toast('PDF открыт в новой вкладке');
   }, [objects, project, toast]);
+
+  // ── Keyboard shortcuts ──────────────────────────────────────────────────
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      // Don't fire when typing in an input/textarea
+      const tag = (document.activeElement as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      const store = useConfiguratorStore.getState();
+      const { selectedId } = store;
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedId) store.removeObject(selectedId);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault(); store.undo();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        if (selectedId) store.duplicateObject(selectedId);
+      }
+      if (e.key === 'Escape') {
+        store.selectObject(null);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   const openImporter = useCallback((file?: File) => {
     setDroppedFile(file ?? null);

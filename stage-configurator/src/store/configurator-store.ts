@@ -188,10 +188,13 @@ export const useConfiguratorStore = create<ConfiguratorStore>((set, get) => ({
 
   saveProject: async () => {
     const { project, objects, roomW, roomD, wallH } = get();
-    const data: Project = { ...project, objects, roomW, roomD, wallH, date: new Date().toISOString().split('T')[0] };
+    // Grab scene thumbnail from the WebGL canvas
+    const thumbnail = typeof document !== 'undefined'
+      ? (document.querySelector('canvas') as HTMLCanvasElement | null)?.toDataURL('image/jpeg', 0.6) ?? undefined
+      : undefined;
+    const data: Project = { ...project, objects, roomW, roomD, wallH, date: new Date().toISOString().split('T')[0], thumbnail };
     const result = await sbSave(data);
-    // Persist ID back to project
-    set(s => ({ project: { ...s.project, id: result.id } }));
+    set(s => ({ project: { ...s.project, id: result.id, thumbnail } }));
     return result;
   },
 
