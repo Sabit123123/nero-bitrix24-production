@@ -66,19 +66,19 @@ function Room() {
 
   return (
     <group>
-      {/* Dark concrete floor */}
+      {/* Floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[roomW, roomD]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.85} metalness={0.05} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.85} metalness={0.05} />
       </mesh>
 
-      {/* Subtle floor grid lines baked in as a second overlay */}
+      {/* Floor grid overlay */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, 0]}>
         <planeGeometry args={[roomW, roomD]} />
-        <meshBasicMaterial color="#2a2a2a" transparent opacity={0.6} wireframe />
+        <meshBasicMaterial color="#444444" transparent opacity={0.5} wireframe />
       </mesh>
 
-      {/* Walls — dark matte black event space */}
+      {/* Walls */}
       {([
         { pos: [0, wallH / 2, -roomD / 2] as [number,number,number], rot: [0, 0, 0] as [number,number,number],            size: [roomW, wallH] as [number,number] },
         { pos: [0, wallH / 2,  roomD / 2] as [number,number,number], rot: [0, Math.PI, 0] as [number,number,number],      size: [roomW, wallH] as [number,number] },
@@ -87,14 +87,14 @@ function Room() {
       ] as const).map((w, i) => (
         <mesh key={i} position={w.pos} rotation={w.rot} receiveShadow>
           <planeGeometry args={w.size} />
-          <meshStandardMaterial color="#111111" roughness={0.98} side={THREE.FrontSide} />
+          <meshStandardMaterial color="#222222" roughness={0.9} side={THREE.FrontSide} />
         </mesh>
       ))}
 
       {/* Ceiling */}
       <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, wallH, 0]}>
         <planeGeometry args={[roomW, roomD]} />
-        <meshStandardMaterial color="#0d0d0d" roughness={1} />
+        <meshStandardMaterial color="#1a1a1a" roughness={1} />
       </mesh>
 
       {/* Floor edge strip — golden accent */}
@@ -171,10 +171,13 @@ export function Scene3D() {
         style={{ background: '#0a0a0f' }}
       >
         {/* Lighting */}
-        <ambientLight intensity={0.8} color="#ffffff" />
-        <hemisphereLight args={['#334466', '#111111', 0.5]} />
-        <directionalLight position={[10, 15, 10]} intensity={1.2} castShadow shadow-mapSize={[2048, 2048]} />
-        <pointLight position={[0, 4, 0]} intensity={0.6} color="#C9A227" distance={20} decay={2} />
+        <ambientLight intensity={2.5} color="#ffffff" />
+        <hemisphereLight args={['#aaccff', '#444444', 1.0]} />
+        <directionalLight position={[10, 15, 10]} intensity={2.5} castShadow shadow-mapSize={[2048, 2048]} />
+        <directionalLight position={[-10, 12, -10]} intensity={1.5} />
+        <pointLight position={[0, 3.5, 0]} intensity={3.0} color="#ffffff" distance={30} decay={1} />
+        <pointLight position={[5, 3, 5]} intensity={1.5} color="#ffffff" distance={20} decay={1} />
+        <pointLight position={[-5, 3, -5]} intensity={1.5} color="#ffffff" distance={20} decay={1} />
 
         {/* Fog when hazer active */}
         {hazeActive && <fog attach="fog" args={['#1a1a2e', 4, 18]} />}
