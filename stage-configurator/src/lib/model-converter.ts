@@ -12,11 +12,16 @@ export async function convertModel(file: File, name?: string): Promise<ConvertRe
   const ext       = file.name.split('.').pop()?.toLowerCase() ?? '';
   const modelName = name || file.name.replace(/\.[^.]+$/, '');
 
-  // SKP: parse directly in the browser — no CloudConvert, no API key
+  // SKP: try client-side OLE2 parser first; newer formats fall back to CloudConvert
   if (ext === 'skp') {
-    const { skpFileToGLBUrl } = await import('./skp-loader');
-    const glbUrl = await skpFileToGLBUrl(file);
-    return { glbUrl, name: modelName, source: 'client-skp' };
+    try {
+      const { skpFileToGLBUrl } = await import('./skp-loader');
+      const glbUrl = await skpFileToGLBUrl(file);
+      return { glbUrl, name: modelName, source: 'client-skp' };
+    } catch {
+      // File is likely a newer SKP format — send to server-side CloudConvert
+      return callConvertAPI(file, modelName);
+    }
   }
 
   // GLB / GLTF: try Supabase upload; fall back to session blob URL

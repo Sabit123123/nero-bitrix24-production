@@ -228,7 +228,10 @@ export function ModelImporter({ onClose, onImported, initialFile }: ModelImporte
                 <div className="text-sm text-red-400 mb-1">Ошибка</div>
                 <div className="text-xs text-red-300/70">{error}</div>
                 {file?.name.endsWith('.skp') && (
-                  <div className="mt-2 text-xs text-white/40">Попробуйте сохранить SKP в формате 2017–2022 в SketchUp</div>
+                  <div className="mt-2 text-xs text-white/40">
+                    Новый формат SKP требует ключ CLOUDCONVERT_API_KEY в настройках Vercel.
+                    Или экспортируйте модель в GLB из SketchUp: Файл → Экспорт → 3D модель → .glb
+                  </div>
                 )}
               </div>
             )}
