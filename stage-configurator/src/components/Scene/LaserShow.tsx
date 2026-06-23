@@ -31,21 +31,18 @@ export function LaserShow({ height, hazeActive }: LaserShowProps) {
       {BEAM_COLORS.map((color, i) => {
         const angleDeg = ANGLES_DEG[i];
         const angleRad = (angleDeg * Math.PI) / 180;
+        // Beams go UP and outward from the device
         const dx = Math.sin(angleRad) * beamLen;
-        const dy = -Math.cos(angleRad) * beamLen;
+        const dy = Math.cos(angleRad) * beamLen;   // positive = upward
 
-        // Beam midpoint (cylinder center between laser and endpoint)
         const mx = dx / 2;
         const my = dy / 2;
 
         return (
           <group key={i}>
-            {/* Volumetric beam — a thin long cylinder */}
-            <mesh
-              position={[mx, my, 0]}
-              rotation={[0, 0, -angleRad]}
-            >
-              <cylinderGeometry args={[0.01, 0.01, beamLen, 6]} />
+            {/* Volumetric beam */}
+            <mesh position={[mx, my, 0]} rotation={[0, 0, -angleRad]}>
+              <cylinderGeometry args={[0.012, 0.004, beamLen, 6]} />
               <meshBasicMaterial
                 color={color}
                 transparent
@@ -55,12 +52,9 @@ export function LaserShow({ height, hazeActive }: LaserShowProps) {
               />
             </mesh>
 
-            {/* Floor dot */}
-            <mesh
-              position={[dx, -height + 0.005, 0]}
-              rotation={[-Math.PI / 2, 0, 0]}
-            >
-              <circleGeometry args={[0.08, 16]} />
+            {/* Ceiling/wall dot */}
+            <mesh position={[dx, dy, 0]}>
+              <sphereGeometry args={[0.06, 8, 8]} />
               <meshBasicMaterial
                 color={color}
                 transparent

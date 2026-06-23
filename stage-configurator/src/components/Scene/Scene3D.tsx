@@ -19,30 +19,49 @@ function Room() {
 
   return (
     <group>
-      {/* Checker floor */}
+      {/* Dark concrete floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[roomW, roomD]} />
-        <meshStandardMaterial color="#c4a882" roughness={0.9} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.85} metalness={0.05} />
       </mesh>
 
-      {/* Walls */}
-      {[
-        { pos: [0, wallH / 2, -roomD / 2] as [number,number,number], rot: [0,0,0] as [number,number,number], size: [roomW, wallH] as [number,number] },
-        { pos: [0, wallH / 2,  roomD / 2] as [number,number,number], rot: [0,Math.PI,0] as [number,number,number], size: [roomW, wallH] as [number,number] },
-        { pos: [-roomW/2, wallH/2, 0]      as [number,number,number], rot: [0,Math.PI/2,0]  as [number,number,number], size: [roomD, wallH] as [number,number] },
-        { pos: [ roomW/2, wallH/2, 0]      as [number,number,number], rot: [0,-Math.PI/2,0] as [number,number,number], size: [roomD, wallH] as [number,number] },
-      ].map((w, i) => (
+      {/* Subtle floor grid lines baked in as a second overlay */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, 0]}>
+        <planeGeometry args={[roomW, roomD]} />
+        <meshBasicMaterial color="#2a2a2a" transparent opacity={0.6} wireframe />
+      </mesh>
+
+      {/* Walls — dark matte black event space */}
+      {([
+        { pos: [0, wallH / 2, -roomD / 2] as [number,number,number], rot: [0, 0, 0] as [number,number,number],            size: [roomW, wallH] as [number,number] },
+        { pos: [0, wallH / 2,  roomD / 2] as [number,number,number], rot: [0, Math.PI, 0] as [number,number,number],      size: [roomW, wallH] as [number,number] },
+        { pos: [-roomW/2, wallH/2, 0]     as [number,number,number], rot: [0, Math.PI/2, 0] as [number,number,number],    size: [roomD, wallH] as [number,number] },
+        { pos: [ roomW/2, wallH/2, 0]     as [number,number,number], rot: [0, -Math.PI/2, 0] as [number,number,number],   size: [roomD, wallH] as [number,number] },
+      ] as const).map((w, i) => (
         <mesh key={i} position={w.pos} rotation={w.rot} receiveShadow>
           <planeGeometry args={w.size} />
-          <meshStandardMaterial color="#909088" roughness={0.95} side={THREE.FrontSide} />
+          <meshStandardMaterial color="#111111" roughness={0.98} side={THREE.FrontSide} />
         </mesh>
       ))}
 
-      {/* Ceiling — subtle */}
+      {/* Ceiling */}
       <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, wallH, 0]}>
         <planeGeometry args={[roomW, roomD]} />
-        <meshStandardMaterial color="#e0e0d8" transparent opacity={0.12} />
+        <meshStandardMaterial color="#0d0d0d" roughness={1} />
       </mesh>
+
+      {/* Floor edge strip — golden accent */}
+      {([
+        { pos: [0, 0.01, -roomD / 2 + 0.025] as [number,number,number], size: [roomW, 0.05] as [number,number] },
+        { pos: [0, 0.01,  roomD / 2 - 0.025] as [number,number,number], size: [roomW, 0.05] as [number,number] },
+        { pos: [-roomW/2 + 0.025, 0.01, 0]   as [number,number,number], size: [0.05, roomD] as [number,number] },
+        { pos: [ roomW/2 - 0.025, 0.01, 0]   as [number,number,number], size: [0.05, roomD] as [number,number] },
+      ] as const).map((s, i) => (
+        <mesh key={`strip-${i}`} position={s.pos} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={s.size} />
+          <meshBasicMaterial color="#C9A227" transparent opacity={0.35} />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -105,12 +124,13 @@ export function Scene3D() {
         style={{ background: '#0a0a0f' }}
       >
         {/* Lighting */}
-        <ambientLight intensity={1.5} color="#ffffff" />
-        <hemisphereLight args={['#ffffff', '#e8e8e0', 0.6]} />
-        <directionalLight position={[10, 15, 10]} intensity={1.5} castShadow shadow-mapSize={[2048, 2048]} />
+        <ambientLight intensity={0.8} color="#ffffff" />
+        <hemisphereLight args={['#334466', '#111111', 0.5]} />
+        <directionalLight position={[10, 15, 10]} intensity={1.2} castShadow shadow-mapSize={[2048, 2048]} />
+        <pointLight position={[0, 4, 0]} intensity={0.6} color="#C9A227" distance={20} decay={2} />
 
         {/* Fog when hazer active */}
-        {hazeActive && <fog attach="fog" args={['#1a1a2e', 15, 40]} />}
+        {hazeActive && <fog attach="fog" args={['#1a1a2e', 4, 18]} />}
 
         {/* Camera */}
         {cameraMode === 'perspective' ? (
