@@ -72,13 +72,23 @@ export default function ConfiguratorPage() {
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
+    // Catalog equipment drag
     const itemId = e.dataTransfer.getData('application/nd-equipment');
     if (itemId) {
       const item = EQUIPMENT.find(eq => eq.id === itemId);
       if (item) useConfiguratorStore.getState().addObject(itemId, [0, item.h / 2, 0]);
       return;
     }
-    // Handle file drops (SKP / GLB / OBJ / FBX)
+    // Custom imported model drag from library
+    const customRaw = e.dataTransfer.getData('application/nd-custom');
+    if (customRaw) {
+      try {
+        const { id, name, url } = JSON.parse(customRaw);
+        useConfiguratorStore.getState().addObjectCustom(id, name, url);
+      } catch { /* ignore malformed */ }
+      return;
+    }
+    // File drop (SKP / GLB / OBJ / FBX)
     const file = e.dataTransfer.files[0];
     if (file) openImporter(file);
   }, [openImporter]);
