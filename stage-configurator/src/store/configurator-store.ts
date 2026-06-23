@@ -30,7 +30,7 @@ interface ConfiguratorStore {
   // Custom imported models
   customModels: CustomEquipment[];
   addCustomModel: (item: CustomEquipment) => void;
-  addObjectCustom: (itemId: string, name: string, modelUrl: string) => void;
+  addObjectCustom: (itemId: string, name: string, modelUrl: string, equipment?: import('@/lib/equipment-storage').CustomEquipment) => void;
 
   // Project
   project: Project;
@@ -154,9 +154,9 @@ export const useConfiguratorStore = create<ConfiguratorStore>((set, get) => ({
   addCustomModel: (item) => {
     set(s => ({ customModels: s.customModels.some(m => m.id === item.id) ? s.customModels : [...s.customModels, item] }));
     // Also add to scene immediately
-    get().addObjectCustom(item.id, item.name, item.modelUrl);
+    get().addObjectCustom(item.id, item.name, item.modelUrl, item);
   },
-  addObjectCustom: (itemId, name, modelUrl) => {
+  addObjectCustom: (itemId, name, modelUrl, equipment?) => {
     get().pushHistory();
     const obj: PlacedObject = {
       uuid: crypto.randomUUID(),
@@ -168,6 +168,7 @@ export const useConfiguratorStore = create<ConfiguratorStore>((set, get) => ({
       visible: true,
       isCustom: true,
       customModelUrl: modelUrl,
+      customEquipment: equipment,
     };
     set(s => ({ objects: [...s.objects, obj] }));
   },

@@ -35,6 +35,7 @@ export interface PlacedObject {
   // Custom imported model (SKP/GLB/etc.)
   isCustom?: boolean;
   customModelUrl?: string;
+  customEquipment?: import('@/lib/equipment-storage').CustomEquipment;
   // User annotation
   note?: string;
 }

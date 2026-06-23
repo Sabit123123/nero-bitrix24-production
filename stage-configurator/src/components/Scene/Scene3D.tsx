@@ -1,6 +1,6 @@
 'use client';
 import { Suspense, useRef, useCallback, useEffect, type RefObject } from 'react';
-import { Canvas, ThreeEvent, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, ThreeEvent, useFrame } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, OrthographicCamera, ContactShadows } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import * as THREE from 'three';
@@ -14,9 +14,8 @@ import { TrussObject } from './TrussObject';
 
 // ─── WASD camera pan ───────────────────────────────────────────────────────
 
-function WASDControls({ orbitRef }: { orbitRef: RefObject<OrbitControlsImpl> }) {
+function WASDControls({ orbitRef }: { orbitRef: RefObject<OrbitControlsImpl | null> }) {
   const keys = useRef<Record<string, boolean>>({});
-  const { camera } = useThree();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -31,15 +30,16 @@ function WASDControls({ orbitRef }: { orbitRef: RefObject<OrbitControlsImpl> }) 
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
   }, []);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     const ctrl = orbitRef.current;
     if (!ctrl) return;
     const k = keys.current;
     if (!k['KeyW'] && !k['KeyS'] && !k['KeyA'] && !k['KeyD']) return;
 
     const speed = 8 * delta;
+    const cam = state.camera;
     const fwd = new THREE.Vector3();
-    camera.getWorldDirection(fwd);
+    cam.getWorldDirection(fwd);
     fwd.y = 0;
     if (fwd.lengthSq() < 0.001) return;
     fwd.normalize();
@@ -51,7 +51,7 @@ function WASDControls({ orbitRef }: { orbitRef: RefObject<OrbitControlsImpl> }) 
     if (k['KeyA']) pan.addScaledVector(right, -speed);
     if (k['KeyD']) pan.addScaledVector(right, speed);
 
-    camera.position.add(pan);
+    cam.position.add(pan);
     ctrl.target.add(pan);
     ctrl.update();
   });
@@ -226,6 +226,10 @@ export function Scene3D() {
                   scale={obj.scale}
                   selected={selectedId === obj.uuid}
                   label={obj.name}
+                  item={obj.customEquipment}
+                  showBeams={showBeams}
+                  showCoverage={showCoverage}
+                  hazeActive={hazeActive}
                   onClick={() => selectObject(obj.uuid)}
                   onDragStart={makeDragStart(obj.uuid, obj.position[1])}
                 />
