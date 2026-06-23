@@ -1,9 +1,3 @@
 {
-  "version": 2,
-  "projects": [
-    {
-      "name": "nd-stage-configurator",
-      "root": "stage-configurator"
-    }
-  ]
+  "version": 2
 }
