@@ -47,7 +47,10 @@ export function ModelImporter({ onClose, onImported, initialFile }: ModelImporte
 
     try {
       const ext = file.name.split('.').pop()?.toLowerCase();
-      if (ext === 'skp' || ext === 'obj' || ext === 'fbx' || ext === 'dae') {
+      if (ext === 'skp') {
+        setState('converting');
+        setProgress('Читаем SKP в браузере...');
+      } else if (ext === 'obj' || ext === 'fbx' || ext === 'dae') {
         setState('converting');
         setProgress(`Конвертация ${ext.toUpperCase()} → GLB...`);
       }
@@ -101,7 +104,7 @@ export function ModelImporter({ onClose, onImported, initialFile }: ModelImporte
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="font-bold text-white text-base">Импорт 3D модели</h2>
-            <p className="text-xs text-white/30 mt-0.5">SKP · GLB · GLTF · OBJ · FBX</p>
+            <p className="text-xs text-white/30 mt-0.5">SKP (нативно) · GLB · GLTF · OBJ · FBX</p>
           </div>
           <button onClick={onClose} className="text-white/40 hover:text-white text-xl">✕</button>
         </div>
@@ -189,9 +192,14 @@ export function ModelImporter({ onClose, onImported, initialFile }: ModelImporte
           <div className="p-3 rounded-lg mb-4" style={{ background: 'rgba(200,0,0,0.08)', border: '1px solid rgba(200,0,0,0.2)' }}>
             <div className="text-sm text-red-400 mb-1">Ошибка</div>
             <div className="text-xs text-red-300/70">{error}</div>
+            {file?.name.endsWith('.skp') && (
+              <div className="mt-2 text-xs text-white/40">
+                Попробуйте сохранить SKP в формате версии 2017–2022 в SketchUp.
+              </div>
+            )}
             {error.includes('CLOUDCONVERT_API_KEY') && (
               <div className="mt-2 text-xs text-white/40">
-                Получите бесплатный API ключ на <span className="text-yellow-500">cloudconvert.com</span> (25 конвертаций/день)
+                Получите API ключ на <span className="text-yellow-500">cloudconvert.com</span> (25 конвертаций/день)
               </div>
             )}
           </div>
