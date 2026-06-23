@@ -87,16 +87,35 @@ create policy "anyone can read equipment"
   on public.equipment for select
   using (active = true);
 
+-- Admin panel (anon key) needs to upsert / soft-delete custom models
+create policy "anon can insert equipment"
+  on public.equipment for insert
+  with check (true);
+
+create policy "anon can update equipment"
+  on public.equipment for update
+  using (true);
+
 -- ============================================================
 -- STORAGE BUCKETS
 -- ============================================================
--- Run these separately if needed:
--- insert into storage.buckets (id, name, public) values ('models', 'models', true);
--- insert into storage.buckets (id, name, public) values ('renders', 'renders', true);
+-- Public 'models' bucket — stores converted .glb files
+insert into storage.buckets (id, name, public)
+values ('models', 'models', true)
+on conflict (id) do nothing;
+
+insert into storage.buckets (id, name, public)
+values ('renders', 'renders', true)
+on conflict (id) do nothing;
 
 -- Storage policies for models bucket
--- create policy "anyone can read models" on storage.objects for select using (bucket_id = 'models');
--- create policy "anon can upload models" on storage.objects for insert with check (bucket_id = 'models');
+create policy "public read models"
+  on storage.objects for select
+  using (bucket_id = 'models');
+
+create policy "service role upload models"
+  on storage.objects for insert
+  with check (bucket_id = 'models');
 
 -- ============================================================
 -- SAMPLE DATA (optional)

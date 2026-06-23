@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Toolbar } from '@/components/UI/Toolbar';
 import { EquipmentLibrary } from '@/components/UI/EquipmentLibrary';
@@ -8,6 +8,7 @@ import { LEDConstructor } from '@/components/UI/LEDConstructor';
 import { TrussConstructor } from '@/components/UI/TrussConstructor';
 import { TemplatesModal } from '@/components/Modals/TemplatesModal';
 import { OpenProjectModal } from '@/components/Modals/OpenProjectModal';
+import { ModelImporter } from '@/components/UI/ModelImporter';
 import { useConfiguratorStore } from '@/store/configurator-store';
 import { EQUIPMENT } from '@/lib/equipment-catalog';
 import { exportPNG, exportProjectPDF } from '@/lib/export';
@@ -28,8 +29,9 @@ export default function ConfiguratorPage() {
   const [showTruss, setShowTruss] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showOpen, setShowOpen] = useState(false);
+  const [showImporter, setShowImporter] = useState(false);
+  const [droppedFile, setDroppedFile] = useState<File | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { saveProject, clearAll, objects, project } = useConfiguratorStore();
 
   const toast = useCallback((msg: string, type: 'ok' | 'err' = 'ok') => {
@@ -63,20 +65,23 @@ export default function ConfiguratorPage() {
     toast('PDF открыт в новой вкладке');
   }, [objects, project, toast]);
 
+  const openImporter = useCallback((file?: File) => {
+    setDroppedFile(file ?? null);
+    setShowImporter(true);
+  }, []);
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     const itemId = e.dataTransfer.getData('application/nd-equipment');
-    if (!itemId) return;
-    const item = EQUIPMENT.find(eq => eq.id === itemId);
-    if (item) useConfiguratorStore.getState().addObject(itemId, [0, item.h / 2, 0]);
-  }, []);
-
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    toast(`"${file.name}" — импорт GLB будет добавлен в следующей версии`, 'err');
-    e.target.value = '';
-  }, [toast]);
+    if (itemId) {
+      const item = EQUIPMENT.find(eq => eq.id === itemId);
+      if (item) useConfiguratorStore.getState().addObject(itemId, [0, item.h / 2, 0]);
+      return;
+    }
+    // Handle file drops (SKP / GLB / OBJ / FBX)
+    const file = e.dataTransfer.files[0];
+    if (file) openImporter(file);
+  }, [openImporter]);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ background: '#050507' }}>
@@ -84,7 +89,7 @@ export default function ConfiguratorPage() {
         onExportPNG={handleExportPNG}
         onExportPDF={handleExportPDF}
         onOpenTemplates={() => setShowTemplates(true)}
-        onImportModel={() => fileInputRef.current?.click()}
+        onImportModel={() => openImporter()}
         onSave={handleSave}
         onNew={handleNew}
         onOpen={() => setShowOpen(true)}
@@ -132,7 +137,13 @@ export default function ConfiguratorPage() {
         <PropertiesPanel />
       </div>
 
-      <input ref={fileInputRef} type="file" accept=".glb,.gltf,.obj,.fbx" className="hidden" onChange={handleFileChange} />
+      {showImporter && (
+        <ModelImporter
+          initialFile={droppedFile}
+          onClose={() => { setShowImporter(false); setDroppedFile(null); }}
+          onImported={() => toast('Модель импортирована и добавлена на сцену')}
+        />
+      )}
 
       {showLED     && <LEDConstructor    onClose={() => setShowLED(false)} />}
       {showTruss   && <TrussConstructor  onClose={() => setShowTruss(false)} />}

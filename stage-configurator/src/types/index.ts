@@ -32,6 +32,9 @@ export interface PlacedObject {
   // Truss specific
   isTruss?: boolean;
   trussConfig?: TrussConfig;
+  // Custom imported model (SKP/GLB/etc.)
+  isCustom?: boolean;
+  customModelUrl?: string;
 }
 
 export interface LEDConfig {

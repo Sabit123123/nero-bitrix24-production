@@ -8,6 +8,7 @@ import { EQUIPMENT } from '@/lib/equipment-catalog';
 import { Equipment } from './Equipment';
 import { LEDScreen } from './LEDScreen';
 import { FloorGrid } from './FloorGrid';
+import { CustomModel } from './CustomModel';
 
 function Room() {
   const { roomW, roomD, wallH } = useConfiguratorStore();
@@ -116,6 +117,20 @@ export function Scene3D() {
 
           {/* Objects */}
           {objects.map(obj => {
+            if (obj.isCustom && obj.customModelUrl) {
+              return (
+                <CustomModel
+                  key={obj.uuid}
+                  glbUrl={obj.customModelUrl}
+                  position={obj.position}
+                  rotation={obj.rotation as [number, number, number]}
+                  scale={obj.scale}
+                  selected={selectedId === obj.uuid}
+                  label={obj.name}
+                  onClick={() => selectObject(obj.uuid)}
+                />
+              );
+            }
             if (obj.isLED && obj.ledConfig) {
               return (
                 <LEDScreen

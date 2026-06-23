@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { PlacedObject, Project, LEDConfig, TrussConfig } from '@/types';
 import { EQUIPMENT } from '@/lib/equipment-catalog';
 import { saveProject as sbSave, listProjects as sbList, deleteProject as sbDelete, isCloudAvailable } from '@/lib/supabase';
+import { CustomEquipment } from '@/lib/equipment-storage';
 
 interface SaveResult { storage: 'cloud' | 'local'; id: string }
 
@@ -25,6 +26,11 @@ interface ConfiguratorStore {
   // LED & Truss constructors
   addLEDScreen: (config: LEDConfig, position: [number, number, number]) => void;
   addTruss: (config: TrussConfig, position: [number, number, number]) => void;
+
+  // Custom imported models
+  customModels: CustomEquipment[];
+  addCustomModel: (item: CustomEquipment) => void;
+  addObjectCustom: (itemId: string, name: string, modelUrl: string) => void;
 
   // Project
   project: Project;
@@ -142,6 +148,28 @@ export const useConfiguratorStore = create<ConfiguratorStore>((set, get) => ({
         trussConfig: config,
       }],
     }));
+  },
+
+  customModels: [],
+  addCustomModel: (item) => {
+    set(s => ({ customModels: s.customModels.some(m => m.id === item.id) ? s.customModels : [...s.customModels, item] }));
+    // Also add to scene immediately
+    get().addObjectCustom(item.id, item.name, item.modelUrl);
+  },
+  addObjectCustom: (itemId, name, modelUrl) => {
+    get().pushHistory();
+    const obj: PlacedObject = {
+      uuid: crypto.randomUUID(),
+      itemId,
+      name,
+      position: [0, 0.5, 0],
+      rotation: [0, 0, 0],
+      scale: 1,
+      visible: true,
+      isCustom: true,
+      customModelUrl: modelUrl,
+    };
+    set(s => ({ objects: [...s.objects, obj] }));
   },
 
   project: {
