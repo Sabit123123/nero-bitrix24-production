@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { PlacedObject, Project, LEDConfig, TrussConfig } from '@/types';
 import { EQUIPMENT } from '@/lib/equipment-catalog';
+import { saveProject as sbSave, listProjects as sbList, deleteProject as sbDelete, isCloudAvailable } from '@/lib/supabase';
+
+interface SaveResult { storage: 'cloud' | 'local'; id: string }
 
 interface ConfiguratorStore {
   // Scene
@@ -19,17 +22,20 @@ interface ConfiguratorStore {
   selectObject: (uuid: string | null) => void;
   clearAll: () => void;
 
-  // LED Constructor
+  // LED & Truss constructors
   addLEDScreen: (config: LEDConfig, position: [number, number, number]) => void;
-
-  // Truss Constructor
   addTruss: (config: TrussConfig, position: [number, number, number]) => void;
 
   // Project
   project: Project;
   setProjectMeta: (meta: Partial<Project>) => void;
-  saveProject: () => Promise<void>;
+  saveProject: () => Promise<SaveResult>;
   loadProject: (data: Project) => void;
+  listProjects: () => Promise<Project[]>;
+  deleteProject: (id: string) => Promise<void>;
+
+  // Cloud status
+  cloudEnabled: boolean;
 
   // UI State
   showGrid: boolean;
@@ -60,13 +66,13 @@ export const useConfiguratorStore = create<ConfiguratorStore>((set, get) => ({
 
   addObject: (itemId, position) => {
     const item = EQUIPMENT.find(e => e.id === itemId);
-    if (!item) throw new Error('Item not found');
+    if (!item) throw new Error(`Equipment not found: ${itemId}`);
     get().pushHistory();
     const obj: PlacedObject = {
       uuid: crypto.randomUUID(),
       itemId,
       name: item.name,
-      position: position || [0, item.h / 2, 0],
+      position: position ?? [0, item.h / 2, 0],
       rotation: [0, 0, 0],
       scale: 1,
       visible: true,
@@ -76,7 +82,7 @@ export const useConfiguratorStore = create<ConfiguratorStore>((set, get) => ({
   },
 
   updateObject: (uuid, updates) => set(s => ({
-    objects: s.objects.map(o => o.uuid === uuid ? { ...o, ...updates } : o)
+    objects: s.objects.map(o => o.uuid === uuid ? { ...o, ...updates } : o),
   })),
 
   removeObject: (uuid) => {
@@ -91,47 +97,51 @@ export const useConfiguratorStore = create<ConfiguratorStore>((set, get) => ({
     const obj = get().objects.find(o => o.uuid === uuid);
     if (!obj) return;
     get().pushHistory();
-    const copy: PlacedObject = {
-      ...obj,
-      uuid: crypto.randomUUID(),
-      position: [obj.position[0] + 1, obj.position[1], obj.position[2] + 1],
-    };
-    set(s => ({ objects: [...s.objects, copy] }));
+    set(s => ({
+      objects: [
+        ...s.objects,
+        { ...obj, uuid: crypto.randomUUID(), position: [obj.position[0] + 1, obj.position[1], obj.position[2] + 1] },
+      ],
+    }));
   },
 
   selectObject: (uuid) => set({ selectedId: uuid }),
-  clearAll: () => set({ objects: [], selectedId: null }),
+  clearAll: () => { get().pushHistory(); set({ objects: [], selectedId: null }); },
 
   addLEDScreen: (config, position) => {
     get().pushHistory();
-    const obj: PlacedObject = {
-      uuid: crypto.randomUUID(),
-      itemId: 'led_screen',
-      name: `LED ${(config.countX * config.cabinetW / 1000).toFixed(1)}×${(config.countY * config.cabinetH / 1000).toFixed(1)}м`,
-      position,
-      rotation: [0, 0, 0],
-      scale: 1,
-      visible: true,
-      isLED: true,
-      ledConfig: config,
-    };
-    set(s => ({ objects: [...s.objects, obj] }));
+    const w = (config.countX * config.cabinetW / 1000).toFixed(1);
+    const h = (config.countY * config.cabinetH / 1000).toFixed(1);
+    set(s => ({
+      objects: [...s.objects, {
+        uuid: crypto.randomUUID(),
+        itemId: 'led_screen',
+        name: `LED ${w}×${h}м`,
+        position,
+        rotation: [0, 0, 0],
+        scale: 1,
+        visible: true,
+        isLED: true,
+        ledConfig: config,
+      }],
+    }));
   },
 
   addTruss: (config, position) => {
     get().pushHistory();
-    const obj: PlacedObject = {
-      uuid: crypto.randomUUID(),
-      itemId: 'truss',
-      name: `Ферма ${config.type} ${config.shape}`,
-      position,
-      rotation: [0, 0, 0],
-      scale: 1,
-      visible: true,
-      isTruss: true,
-      trussConfig: config,
-    };
-    set(s => ({ objects: [...s.objects, obj] }));
+    set(s => ({
+      objects: [...s.objects, {
+        uuid: crypto.randomUUID(),
+        itemId: 'truss',
+        name: `Ферма ${config.type} ${config.shape}`,
+        position,
+        rotation: [0, 0, 0],
+        scale: 1,
+        visible: true,
+        isTruss: true,
+        trussConfig: config,
+      }],
+    }));
   },
 
   project: {
@@ -150,20 +160,26 @@ export const useConfiguratorStore = create<ConfiguratorStore>((set, get) => ({
 
   saveProject: async () => {
     const { project, objects, roomW, roomD, wallH } = get();
-    const data = { ...project, objects, roomW, roomD, wallH, date: new Date().toISOString().split('T')[0] };
-    const saves = JSON.parse(localStorage.getItem('nd_projects') || '[]');
-    const idx = saves.findIndex((s: Project) => s.name === data.name);
-    if (idx >= 0) saves[idx] = data; else saves.push(data);
-    localStorage.setItem('nd_projects', JSON.stringify(saves));
+    const data: Project = { ...project, objects, roomW, roomD, wallH, date: new Date().toISOString().split('T')[0] };
+    const result = await sbSave(data);
+    // Persist ID back to project
+    set(s => ({ project: { ...s.project, id: result.id } }));
+    return result;
   },
 
   loadProject: (data) => set({
-    objects: data.objects,
+    objects: data.objects ?? [],
     roomW: data.roomW,
     roomD: data.roomD,
     wallH: data.wallH,
     project: data,
+    selectedId: null,
   }),
+
+  listProjects: () => sbList(),
+  deleteProject: (id) => sbDelete(id),
+
+  cloudEnabled: isCloudAvailable(),
 
   showGrid: true,
   showCoverage: false,
@@ -174,14 +190,15 @@ export const useConfiguratorStore = create<ConfiguratorStore>((set, get) => ({
   toggleCoverage: () => set(s => ({ showCoverage: !s.showCoverage })),
   toggleBeams: () => set(s => ({ showBeams: !s.showBeams })),
   toggleSnap: () => set(s => ({ snapEnabled: !s.snapEnabled })),
-  toggleCameraMode: () => set(s => ({ cameraMode: s.cameraMode === 'perspective' ? 'orthographic' : 'perspective' })),
+  toggleCameraMode: () => set(s => ({
+    cameraMode: s.cameraMode === 'perspective' ? 'orthographic' : 'perspective',
+  })),
 
   history: [],
   pushHistory: () => set(s => ({ history: [...s.history.slice(-20), [...s.objects]] })),
   undo: () => {
     const { history } = get();
     if (!history.length) return;
-    const prev = history[history.length - 1];
-    set({ objects: prev, history: history.slice(0, -1) });
+    set({ objects: history[history.length - 1], history: history.slice(0, -1) });
   },
 }));
