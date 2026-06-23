@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const SUPPORTED = ['skp', 'obj', 'fbx', 'dae'];
 
-export const maxDuration = 60; // Vercel: extend timeout for conversion
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,9 +16,10 @@ export async function POST(req: NextRequest) {
 
     const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
 
-    // GLB/GLTF — no conversion needed
+    // GLB/GLTF — try Supabase, fall back with error (client handles blob URL fallback)
     if (ext === 'glb' || ext === 'gltf') {
-      const url = await storeInSupabase(file, name);
+      const url = await tryStoreInSupabase(file, name);
+      if (!url) return NextResponse.json({ error: 'No Supabase configured for storage' }, { status: 503 });
       return NextResponse.json({ glbUrl: url, name, source: 'direct' });
     }
 
@@ -45,9 +46,26 @@ export async function POST(req: NextRequest) {
 }
 
 async function convertWithCloudConvert(file: File, fromFormat: string, name: string, apiKey: string): Promise<string> {
-  const cc = new CloudConvert(apiKey, false); // false = production mode
+  // Try production first; if auth fails (sandbox key), retry in sandbox mode
+  for (const sandbox of [false, true]) {
+    try {
+      return await runCloudConvertJob(file, fromFormat, name, apiKey, sandbox);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '';
+      const isForbidden = msg.includes('403') || msg.includes('Forbidden') || msg.includes('Unauthorized') || msg.includes('401');
+      if (!sandbox && isForbidden) {
+        console.warn('CloudConvert production mode failed with auth error, retrying in sandbox mode');
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error('CloudConvert: both production and sandbox modes failed');
+}
 
-  // 1. Create job
+async function runCloudConvertJob(file: File, fromFormat: string, name: string, apiKey: string, sandbox: boolean): Promise<string> {
+  const cc = new CloudConvert(apiKey, sandbox);
+
   const job = await cc.jobs.create({
     tag: `nd-${Date.now()}`,
     tasks: {
@@ -59,7 +77,6 @@ async function convertWithCloudConvert(file: File, fromFormat: string, name: str
         input: ['upload'],
         input_format: fromFormat,
         output_format: 'glb',
-        // SKP-specific options for better geometry extraction
         ...(fromFormat === 'skp' ? {
           engine: 'sketchup',
           engine_version: '2023',
@@ -74,49 +91,60 @@ async function convertWithCloudConvert(file: File, fromFormat: string, name: str
     },
   });
 
-  // 2. Upload the file
   const uploadTask = job.tasks.find(t => t.name === 'upload');
   if (!uploadTask) throw new Error('No upload task in CloudConvert job');
 
   await cc.tasks.upload(uploadTask, new Blob([await file.arrayBuffer()]), file.name);
 
-  // 3. Wait for completion (poll)
   const finished = await cc.jobs.wait(job.id);
 
-  // 4. Get download URL
   const exportTask = finished.tasks.find(t => t.name === 'export' && t.status === 'finished');
   const downloadUrl = exportTask?.result?.files?.[0]?.url;
   if (!downloadUrl) throw new Error('CloudConvert: no output URL');
 
-  // 5. Download GLB and store in Supabase Storage
-  const glbResponse = await fetch(downloadUrl);
-  if (!glbResponse.ok) throw new Error('Failed to download converted GLB');
-  const glbBlob = await glbResponse.blob();
-  const glbFile = new File([glbBlob], `${name}.glb`, { type: 'model/gltf-binary' });
-
-  return storeInSupabase(glbFile, name);
+  // Try to persist in Supabase; if not configured, return CloudConvert URL directly (~24h valid)
+  const storedUrl = await tryStoreGlbFromUrl(downloadUrl, name);
+  return storedUrl ?? downloadUrl;
 }
 
-async function storeInSupabase(file: File | Blob, name: string): Promise<string> {
+async function tryStoreGlbFromUrl(downloadUrl: string, name: string): Promise<string | null> {
+  const sbUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const sbKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!sbUrl || !sbKey || sbUrl.includes('your-project')) return null;
+
+  try {
+    const glbResponse = await fetch(downloadUrl);
+    if (!glbResponse.ok) return null;
+    const glbBlob = await glbResponse.blob();
+    const glbFile = new File([glbBlob], `${name}.glb`, { type: 'model/gltf-binary' });
+    return await tryStoreInSupabase(glbFile, name);
+  } catch {
+    return null;
+  }
+}
+
+async function tryStoreInSupabase(file: File | Blob, name: string): Promise<string | null> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!url || !key || url.includes('your-project')) {
-    // No Supabase — we can't persist server-side without storage.
-    throw new Error('Set NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY to store models');
+  if (!url || !key || url.includes('your-project')) return null;
+
+  try {
+    const sb = createClient(url, key);
+    const path = `models/${Date.now()}-${name.replace(/[^a-z0-9-]/gi, '_')}.glb`;
+
+    const arrayBuffer = await file.arrayBuffer();
+    const { error } = await sb.storage.from('models').upload(path, arrayBuffer, {
+      contentType: 'model/gltf-binary',
+      upsert: false,
+    });
+
+    if (error) return null;
+
+    const { data: { publicUrl } } = sb.storage.from('models').getPublicUrl(path);
+    return publicUrl;
+  } catch {
+    return null;
   }
-
-  const sb = createClient(url, key);
-  const path = `models/${Date.now()}-${name.replace(/[^a-z0-9-]/gi, '_')}.glb`;
-
-  const arrayBuffer = await file.arrayBuffer();
-  const { error } = await sb.storage.from('models').upload(path, arrayBuffer, {
-    contentType: 'model/gltf-binary',
-    upsert: false,
-  });
-
-  if (error) throw new Error(`Supabase upload failed: ${error.message}`);
-
-  const { data: { publicUrl } } = sb.storage.from('models').getPublicUrl(path);
-  return publicUrl;
 }

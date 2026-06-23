@@ -19,6 +19,7 @@ export function Toolbar({ onExportPNG, onExportPDF, onOpenTemplates, onImportMod
     roomW, roomD, wallH, setRoom,
     showGrid, showCoverage, showBeams, snapEnabled, cameraMode,
     toggleGrid, toggleCoverage, toggleBeams, toggleSnap, toggleCameraMode,
+    floorType, setFloorType,
     undo, objects,
   } = useConfiguratorStore();
 
@@ -82,6 +83,23 @@ export function Toolbar({ onExportPNG, onExportPDF, onOpenTemplates, onImportMod
         {cameraMode === 'perspective' ? '3D' : '2D'}
       </button>
       <button onClick={toggleSnap} className={`btn-ghost ${snapEnabled ? 'active' : ''}`}>Сетка 📌</button>
+
+      <div className="w-px h-5 bg-white/10" />
+
+      {/* Floor type */}
+      <span className="text-white/30 text-xs">Пол:</span>
+      <select
+        value={floorType}
+        onChange={e => setFloorType(e.target.value as Parameters<typeof setFloorType>[0])}
+        className="bg-white/6 border border-white/10 rounded text-white text-xs outline-none py-1 px-2 cursor-pointer"
+      >
+        <option value="concrete">Бетон</option>
+        <option value="parquet">Паркет</option>
+        <option value="carpet">Ковёр</option>
+        <option value="stage">Сцена</option>
+        <option value="tile">Плитка</option>
+        <option value="light">Светлый</option>
+      </select>
 
       <div className="w-px h-5 bg-white/10" />
 

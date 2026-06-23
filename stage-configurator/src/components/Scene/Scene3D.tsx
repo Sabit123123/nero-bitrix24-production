@@ -61,15 +61,25 @@ function WASDControls({ orbitRef }: { orbitRef: RefObject<OrbitControlsImpl | nu
 
 // ─── Room geometry ─────────────────────────────────────────────────────────
 
+const FLOOR_PRESETS: Record<string, { color: string; roughness: number; metalness: number }> = {
+  concrete: { color: '#2a2a2a', roughness: 0.85, metalness: 0.05 },
+  parquet:  { color: '#5c3d1a', roughness: 0.75, metalness: 0.0  },
+  carpet:   { color: '#3d1a1a', roughness: 1.0,  metalness: 0.0  },
+  stage:    { color: '#111111', roughness: 0.3,  metalness: 0.15 },
+  tile:     { color: '#c8c8c0', roughness: 0.4,  metalness: 0.05 },
+  light:    { color: '#d4b896', roughness: 0.65, metalness: 0.0  },
+};
+
 function Room() {
-  const { roomW, roomD, wallH } = useConfiguratorStore();
+  const { roomW, roomD, wallH, floorType } = useConfiguratorStore();
+  const floor = FLOOR_PRESETS[floorType] ?? FLOOR_PRESETS.concrete;
 
   return (
     <group>
       {/* Floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[roomW, roomD]} />
-        <meshStandardMaterial color="#2a2a2a" roughness={0.85} metalness={0.05} />
+        <meshStandardMaterial color={floor.color} roughness={floor.roughness} metalness={floor.metalness} />
       </mesh>
 
       {/* Floor grid overlay */}

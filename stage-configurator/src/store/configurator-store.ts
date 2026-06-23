@@ -49,11 +49,13 @@ interface ConfiguratorStore {
   showBeams: boolean;
   snapEnabled: boolean;
   cameraMode: 'perspective' | 'orthographic';
+  floorType: 'concrete' | 'parquet' | 'carpet' | 'stage' | 'tile' | 'light';
   toggleGrid: () => void;
   toggleCoverage: () => void;
   toggleBeams: () => void;
   toggleSnap: () => void;
   toggleCameraMode: () => void;
+  setFloorType: (t: ConfiguratorStore['floorType']) => void;
 
   // Undo
   history: PlacedObject[][];
@@ -218,6 +220,7 @@ export const useConfiguratorStore = create<ConfiguratorStore>((set, get) => ({
   showBeams: true,
   snapEnabled: true,
   cameraMode: 'perspective',
+  floorType: 'concrete',
   toggleGrid: () => set(s => ({ showGrid: !s.showGrid })),
   toggleCoverage: () => set(s => ({ showCoverage: !s.showCoverage })),
   toggleBeams: () => set(s => ({ showBeams: !s.showBeams })),
@@ -225,6 +228,7 @@ export const useConfiguratorStore = create<ConfiguratorStore>((set, get) => ({
   toggleCameraMode: () => set(s => ({
     cameraMode: s.cameraMode === 'perspective' ? 'orthographic' : 'perspective',
   })),
+  setFloorType: (t) => set({ floorType: t }),
 
   history: [],
   pushHistory: () => set(s => ({ history: [...s.history.slice(-20), [...s.objects]] })),
